@@ -1,0 +1,10 @@
+# Llaves y secretos: NUNCA se suben a GitHub
+backend/*.json
+credenciales*.json
+.env
+
+# Entorno virtual y archivos temporales de Python
+venv/
+.venv/
+__pycache__/
+*.pyc
