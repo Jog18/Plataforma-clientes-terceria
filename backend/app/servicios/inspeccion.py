@@ -128,10 +128,14 @@ def construir_paquete(filas_inspeccion: list[dict], filas_defectos: list[dict]) 
     defectos_por_insp = agrupar_defectos(filas_defectos)
 
     registros = []
+    descartados = 0
     for fila in filas_inspeccion:
         limpio = limpiar_registro(fila, defectos_por_insp.get(a_entero(fila.get(COL_ID, "")), []))
         if limpio is not None:
             registros.append(limpio)
+        else:
+            # Fila con algún dato pero sin ID o sin fecha válida.
+            descartados += 1
     registros.sort(key=lambda r: (r["fecha"], r["id"]))
 
     catalogo_defectos = sorted({d["defecto"] for r in registros for d in r["defectos"] if d["defecto"]})
@@ -142,6 +146,7 @@ def construir_paquete(filas_inspeccion: list[dict], filas_defectos: list[dict]) 
         "generado": datetime.now().isoformat(timespec="seconds"),
         "cliente": "HBPO",
         "total_registros": len(registros),
+        "descartados": descartados,
         "defectos": catalogo_defectos,
         "turnos": turnos,
         "partes": partes,
