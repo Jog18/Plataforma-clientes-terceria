@@ -5,7 +5,7 @@ los encabezados y las primeras filas. Si ves tus datos, la Fase 1 quedó lista.
 
 Uso (desde la carpeta raíz del proyecto):
     pip install -r requirements.txt
-    python backend/probar_conexion.py
+    python backend/scripts/probar_conexion.py
 """
 
 import sys
@@ -18,7 +18,7 @@ from google.auth.exceptions import RefreshError
 SHEET_ID = "1Bmzr7_F1GXc7204Jtu8rtUkE7RaxsGFsjGSPDR-f-GA"
 
 # La llave JSON del robot. Vive solo en tu computadora (está en .gitignore).
-CREDENCIALES = Path(__file__).parent / "credenciales.json"
+CREDENCIALES = Path(__file__).resolve().parents[1] / "credenciales.json"
 
 FILAS_DE_MUESTRA = 3
 
