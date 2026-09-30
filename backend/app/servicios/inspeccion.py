@@ -69,14 +69,29 @@ def limpiar_texto(texto: str) -> str:
     return re.sub(r"\s+", " ", (texto or "")).strip()
 
 
+def leer_id(texto: str) -> str:
+    """El ID lo genera la app como texto hexadecimal ('e21c0dc4', '26456617').
+
+    Se trata siempre como texto: convertirlo a número pierde los que traen
+    letras. Se pasa a minúsculas para que el cruce con defectos no falle.
+    """
+    return (texto or "").strip().lower()
+
+
+def _hora_ordenable(hora: str) -> tuple[int, int, int]:
+    """'8:26:31' -> (8, 26, 31) para ordenar bien ('10:00' va después de '9:00')."""
+    partes = [a_entero(p) for p in (hora or "").split(":")]
+    return tuple((partes + [0, 0, 0])[:3])
+
+
 # ---- limpieza de registros -------------------------------------------------
 
-def agrupar_defectos(filas_defectos: list[dict]) -> dict[int, list[dict]]:
+def agrupar_defectos(filas_defectos: list[dict]) -> dict[str, list[dict]]:
     """Pasa 'Detalle Defectos' a un diccionario: id de inspección -> sus defectos."""
-    por_inspeccion: dict[int, list[dict]] = {}
+    por_inspeccion: dict[str, list[dict]] = {}
     for fila in filas_defectos:
-        id_insp = a_entero(fila.get(COL_DEF_ID_INSP, ""))
-        if id_insp == 0:
+        id_insp = leer_id(fila.get(COL_DEF_ID_INSP, ""))
+        if not id_insp:
             continue
         por_inspeccion.setdefault(id_insp, []).append({
             "defecto": limpiar_texto(fila.get(COL_DEF_DEFECTO, "")).upper(),
@@ -91,9 +106,9 @@ def limpiar_registro(fila: dict, defectos: list[dict]) -> dict | None:
 
     Regresa None si la fila no sirve (sin ID o sin fecha válida).
     """
-    id_insp = a_entero(fila.get(COL_ID, ""))
+    id_insp = leer_id(fila.get(COL_ID, ""))
     fecha = a_fecha(fila.get(COL_FECHA, ""))
-    if id_insp == 0 or fecha is None:
+    if not id_insp or fecha is None:
         return None
 
     insp = a_entero(fila.get(COL_INSP, ""))
@@ -130,13 +145,14 @@ def construir_paquete(filas_inspeccion: list[dict], filas_defectos: list[dict]) 
     registros = []
     descartados = 0
     for fila in filas_inspeccion:
-        limpio = limpiar_registro(fila, defectos_por_insp.get(a_entero(fila.get(COL_ID, "")), []))
+        limpio = limpiar_registro(fila, defectos_por_insp.get(leer_id(fila.get(COL_ID, "")), []))
         if limpio is not None:
             registros.append(limpio)
         else:
             # Fila con algún dato pero sin ID o sin fecha válida.
             descartados += 1
-    registros.sort(key=lambda r: (r["fecha"], r["id"]))
+    # Mismo orden que la hoja: por fecha y, dentro del día, por hora.
+    registros.sort(key=lambda r: (r["fecha"], _hora_ordenable(r["hora"])))
 
     catalogo_defectos = sorted({d["defecto"] for r in registros for d in r["defectos"] if d["defecto"]})
     turnos = sorted({r["turno"] for r in registros if r["turno"]})
