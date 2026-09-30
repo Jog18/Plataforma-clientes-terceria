@@ -13,6 +13,8 @@ Reglas acordadas con Jesús (2026-09-30):
 import re
 from datetime import date, datetime
 
+from app.servicios.partes import estandarizar_parte
+
 # Nombres de columna en la hoja. Si algún día cambian en la hoja, solo se
 # cambian aquí.
 COL_ID = "ID"
@@ -120,7 +122,7 @@ def limpiar_registro(fila: dict, defectos: list[dict]) -> dict | None:
         "fecha": fecha.isoformat(),          # 'YYYY-MM-DD', fácil de ordenar y filtrar
         "turno": limpiar_texto(fila.get(COL_TURNO, "")),
         "hora": limpiar_texto(fila.get(COL_HORA, "")),
-        "parte": limpiar_texto(fila.get(COL_PARTE, "")).upper(),
+        "parte": estandarizar_parte(fila.get(COL_PARTE, "")),
         "serial": limpiar_texto(fila.get(COL_SERIAL, "")),
         "fecha_produccion": fecha_prod.isoformat() if fecha_prod else None,
         "insp": insp,
