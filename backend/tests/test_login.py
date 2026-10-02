@@ -167,3 +167,26 @@ def test_logout_borra_la_cookie(cliente):
     assert r.status_code == 204
     assert 'sesion=""' in r.headers["set-cookie"] or "max-age=0" in r.headers["set-cookie"].lower()
     assert cliente.get("/api/yo").status_code == 401
+
+
+# ---- pantalla de login (paso 3) ----------------------------------------------
+
+def test_login_sirve_html_y_no_se_guarda_en_cache(cliente):
+    r = cliente.get("/login")
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith("text/html")
+    assert r.headers["Cache-Control"] == "no-store"
+    assert "<form" in r.text and "/js/login.js" in r.text
+    assert "<script>" not in r.text  # nada de scripts en línea: la CSP los bloquearía
+
+
+def test_archivos_estaticos_son_publicos(cliente):
+    assert cliente.get("/css/base.css").status_code == 200
+    assert cliente.get("/js/login.js").status_code == 200
+
+
+def test_raiz_con_sesion_no_se_guarda_en_cache(cliente):
+    entrar(cliente)
+    r = cliente.get("/")
+    assert r.status_code == 200
+    assert r.headers["Cache-Control"] == "no-store"

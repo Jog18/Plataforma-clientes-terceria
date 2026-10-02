@@ -47,6 +47,11 @@ backend/
     crear_hash.py      genera el hash del admin y la SECRET_KEY
   tests/               pruebas automáticas (pytest backend/tests)
   credenciales.json    llave del robot (NO se sube, está en .gitignore)
+frontend/
+  login.html           pantalla de inicio de sesión
+  css/base.css         colores y componentes compartidos (del dashboard original)
+  css/login.css
+  js/login.js          envía el login a /api/login y pasa al dashboard
 docs/
   plan-preliminar.md
   referencia/dashboard-original-grammer.html   dashboard original con datos fijos
@@ -64,9 +69,10 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --app-dir backend
 ```
 
+- http://127.0.0.1:8000/: pantalla de inicio de sesión (usuario y contraseña
+  del `.env`); después, el dashboard.
 - http://127.0.0.1:8000/api/salud: el servidor está vivo.
-- http://127.0.0.1:8000/docs: documentación interactiva. Desde ahí puedes
-  probar `POST /api/login` con tu usuario y contraseña del `.env`.
+- http://127.0.0.1:8000/docs: documentación interactiva.
 - http://127.0.0.1:8000/api/datos: registros limpios de la hoja (necesita sesión).
 
 Requiere la llave en `backend/credenciales.json` y que la hoja esté compartida

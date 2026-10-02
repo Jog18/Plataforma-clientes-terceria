@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iniciar sesión — Tablero de Calidad</title>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/login.css">
+</head>
+<body class="login">
+  <main class="card">
+    <h1>Tablero de Calidad</h1>
+    <p class="sub">Inspección de tercería · Inicia sesión para ver los datos.</p>
+
+    <form id="form" autocomplete="on" novalidate>
+      <div class="f">
+        <label for="usuario">Usuario</label>
+        <input id="usuario" name="username" type="text" autocomplete="username"
+               autocapitalize="none" spellcheck="false" required autofocus>
+      </div>
+      <div class="f">
+        <label for="contrasena">Contraseña</label>
+        <input id="contrasena" name="password" type="password"
+               autocomplete="current-password" required>
+      </div>
+      <p id="aviso" class="aviso" role="alert" hidden></p>
+      <button id="entrar" class="btn primary" type="submit">Entrar</button>
+    </form>
+
+    <p class="pie">Acceso solo para usuarios autorizados.</p>
+  </main>
+  <!-- Todo el JavaScript va en archivos aparte: la política CSP no permite scripts dentro del HTML. -->
+  <script src="/js/login.js"></script>
+</body>
+</html>

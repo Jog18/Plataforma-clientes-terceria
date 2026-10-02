@@ -61,12 +61,10 @@ def pantalla_login(sesion: Sesion | None = Depends(sesion_actual)):
         return RedirectResponse("/", status_code=303)
     if LOGIN.exists():
         return FileResponse(LOGIN)
-    return JSONResponse({
-        "mensaje": "Pantalla de inicio de sesión: llega en el paso 3. "
-                   "Mientras, usa POST /api/login desde /docs.",
-    })
+    return JSONResponse({"mensaje": "Falta frontend/login.html."}, status_code=404)
 
 
 if FRONTEND.exists():
-    # /css/estilos.css, /js/app.js, etc.
+    # Archivos estáticos (/css/..., /js/...). No contienen datos, así que son
+    # públicos; index.html y login.html se sirven arriba, con sus reglas.
     app.mount("/", StaticFiles(directory=FRONTEND), name="frontend")
