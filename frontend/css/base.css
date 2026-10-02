@@ -1,0 +1,28 @@
+/* Estilos compartidos por todas las pantallas (login y dashboard).
+   Los colores y la tipografía son los del dashboard original. */
+:root{
+  --bg:#f3f4f6; --surface:#ffffff; --surface-2:#f8f9fb; --line:#e3e5ea; --grid:#eceef2;
+  --ink:#101418; --ink-2:#4b5563; --ink-3:#8a93a2;
+  --s1:#2a78d6; --s1-soft:#cde2fb; --s2:#eb6834; --s2-soft:#fbd9cb; --s3:#1baf7a; --s7:#4a3aa7;
+  --warn:#b45309; --warn-bg:#fef3c7; --ok:#15803d; --ok-bg:#dcfce7;
+  --err:#b91c1c; --err-bg:#fee2e2;
+  --radius:12px; --shadow:0 1px 2px rgba(16,20,24,.05),0 1px 8px rgba(16,20,24,.04);
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45}
+button,select,input{font:inherit}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer;color:var(--ink);box-shadow:var(--shadow)}
+.btn:hover{border-color:#c7ccd6}
+.btn.primary{background:var(--s1);color:#fff;border-color:var(--s1)}
+.btn.primary:hover{background:#2368bd}
+.btn:disabled{opacity:.6;cursor:wait}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}
+.f{display:flex;flex-direction:column;gap:4px}
+.f label{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-3);font-weight:600}
+.f input{border:1px solid var(--line);border-radius:8px;padding:9px 10px;background:var(--surface-2);color:var(--ink);width:100%}
+.f input:focus{outline:2px solid var(--s1-soft);border-color:var(--s1)}
+.aviso{border-radius:8px;padding:9px 11px;font-size:13px}
+.aviso.error{background:var(--err-bg);color:var(--err)}
+.aviso.alerta{background:var(--warn-bg);color:var(--warn)}
+.aviso[hidden]{display:none}

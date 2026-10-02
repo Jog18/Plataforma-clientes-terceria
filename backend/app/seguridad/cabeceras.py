@@ -12,8 +12,9 @@ Son instrucciones para el navegador:
 - Permissions-Policy: la página no puede pedir cámara, micrófono ni ubicación.
 - Strict-Transport-Security (solo producción): el navegador recordará usar
   siempre HTTPS con este sitio durante un año.
-- Cache-Control: no-store en /api: los datos no se quedan guardados en la
-  caché del navegador de una computadora compartida.
+- Cache-Control: no-store en /api y en las páginas HTML: ni los datos ni el
+  dashboard se quedan guardados en la caché del navegador de una computadora
+  compartida, y el navegador siempre vuelve a preguntar si hay sesión.
 """
 
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -56,7 +57,8 @@ class CabecerasSeguridad(BaseHTTPMiddleware):
         if not ruta.startswith(RUTAS_SIN_CSP):
             respuesta.headers.setdefault("Content-Security-Policy", CSP)
 
-        if ruta.startswith("/api/"):
+        es_html = respuesta.headers.get("content-type", "").startswith("text/html")
+        if ruta.startswith("/api/") or es_html or ruta in ("/", "/login"):
             respuesta.headers["Cache-Control"] = "no-store"
 
         if self.produccion:
