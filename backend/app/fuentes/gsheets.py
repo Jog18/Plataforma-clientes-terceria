@@ -89,3 +89,20 @@ class FuenteGoogleSheets:
         """Obliga a releer de Google en la siguiente petición."""
         with self._candado:
             self._cache.clear()
+
+    def refrescar(self, min_segundos: float = 10) -> bool:
+        """Descarta las copias guardadas para que la siguiente lectura vaya a Google.
+
+        Es lo que usa el botón "Actualizar" del dashboard. Las copias que se
+        leyeron hace menos de `min_segundos` se conservan: así, aunque varios
+        usuarios (o uno impaciente) pulsen el botón seguido, Google recibe a
+        lo mucho una lectura cada `min_segundos` y no se agota la cuota.
+
+        Regresa True si la siguiente petición va a leer de Google.
+        """
+        ahora = time.monotonic()
+        with self._candado:
+            vencidas = [p for p, (momento, _) in self._cache.items() if ahora - momento >= min_segundos]
+            for pestana in vencidas:
+                del self._cache[pestana]
+            return bool(vencidas) or not self._cache

@@ -12,6 +12,7 @@ import gspread
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.clientes import Cliente
+from app.config import config
 from app.dependencias import obtener_cliente, obtener_fuente
 from app.fuentes.gsheets import FuenteGoogleSheets
 from app.servicios import inspeccion
@@ -27,10 +28,18 @@ def salud():
 
 @router.get("/datos")
 def datos(
+    refrescar: bool = False,
     cliente: Cliente = Depends(obtener_cliente),
     fuente: FuenteGoogleSheets = Depends(obtener_fuente),
 ):
-    """Paquete completo de registros limpios para el dashboard."""
+    """Paquete completo de registros limpios para el dashboard.
+
+    Normalmente sale de la copia guardada (hasta `cache_segundos`). Con
+    `?refrescar=1`, que usa el botón "Actualizar", se lee la hoja de nuevo,
+    salvo que la copia tenga menos de `refresco_minimo_segundos`.
+    """
+    if refrescar:
+        fuente.refrescar(config.refresco_minimo_segundos)
     try:
         filas_insp = fuente.leer_tabla(cliente.pestana_inspeccion)
         filas_def = fuente.leer_tabla(cliente.pestana_defectos)
