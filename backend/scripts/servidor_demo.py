@@ -69,6 +69,9 @@ class FuenteDemo:
     def leer_tabla(self, pestana: str) -> list[dict]:
         return self.defs if "Defectos" in pestana else self.insp
 
+    def refrescar(self, min_segundos: float = 10) -> bool:
+        return True  # los datos de demo no vienen de ninguna parte
+
 
 app.dependency_overrides[dependencias.obtener_fuente] = lambda: FuenteDemo()
 

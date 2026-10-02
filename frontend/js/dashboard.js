@@ -147,10 +147,12 @@
 
   // ---- carga de datos ---------------------------------------------------------
 
-  function cargar() {
-    estado("Cargando datos de la hoja…");
+  // forzar = true (botón Actualizar): el servidor lee la hoja de Google de nuevo
+  // en lugar de usar su copia de hasta 5 minutos. La recarga automática no fuerza.
+  function cargar(forzar) {
+    estado(forzar ? "Leyendo la hoja de Google…" : "Cargando datos de la hoja…");
     $("btnActualizar").disabled = true;
-    return fetch("/api/datos", { credentials: "same-origin", cache: "no-store" })
+    return fetch(forzar ? "/api/datos?refrescar=1" : "/api/datos", { credentials: "same-origin", cache: "no-store" })
       .then(function (r) {
         if (r.status === 401) { window.location.replace("/login"); return null; }
         if (!r.ok) {
@@ -583,7 +585,7 @@
   // ---- botones de cabecera ----------------------------------------------------------------
 
   $("btnImprimir").addEventListener("click", function () { window.print(); });
-  $("btnActualizar").addEventListener("click", function () { cargar(); });
+  $("btnActualizar").addEventListener("click", function () { cargar(true); });
   $("btnSalir").addEventListener("click", function () {
     fetch("/api/logout", { method: "POST", credentials: "same-origin" })
       .catch(function () { })
@@ -605,7 +607,7 @@
     detLimit = 100; renderDet(F);
   }
 
-  cargar();
+  cargar(false);
   // La caché del backend dura 5 minutos; recargar en ese ritmo mantiene el tablero al día.
-  setInterval(cargar, 5 * 60 * 1000);
+  setInterval(function () { cargar(false); }, 5 * 60 * 1000);
 })();

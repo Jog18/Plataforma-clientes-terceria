@@ -34,6 +34,10 @@ class Config(BaseSettings):
     # de volver a pedirlos. Protege la cuota de lectura de la API de Sheets.
     cache_segundos: int = 300
 
+    # El botón "Actualizar" fuerza una lectura nueva, pero no más seguido que
+    # esto (segundos): protege la cuota de Google si se pulsa muchas veces.
+    refresco_minimo_segundos: int = 10
+
     # Pestañas que usa el dashboard.
     pestana_inspeccion: str = "Inspeccion HBPO"
     pestana_defectos: str = "Detalle Defectos"

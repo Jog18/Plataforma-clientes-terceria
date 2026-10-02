@@ -77,6 +77,9 @@ uvicorn app.main:app --reload --app-dir backend
 - http://127.0.0.1:8000/api/salud: el servidor está vivo.
 - http://127.0.0.1:8000/docs: documentación interactiva.
 - http://127.0.0.1:8000/api/datos: registros limpios de la hoja (necesita sesión).
+  Con `?refrescar=1` (lo usa el botón Actualizar) se lee la hoja de nuevo en
+  vez de usar la copia de 5 min, con un mínimo de `REFRESCO_MINIMO_SEGUNDOS`
+  (10 por defecto) entre lecturas para no agotar la cuota de Google.
 
 Requiere la llave en `backend/credenciales.json` y que la hoja esté compartida
 como Lector con el correo de la cuenta de servicio.
