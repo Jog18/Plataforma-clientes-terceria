@@ -10,7 +10,7 @@ que llena la app de captura.
 |---|---|---|
 | 1 | Acceso a Google Sheets con cuenta de servicio | Listo |
 | 2 | Backend FastAPI (`/api/datos`) | Listo |
-| 3 | Inicio de sesión (admin), seguridad y dashboard que consume `/api/datos` | En curso |
+| 3 | Inicio de sesión (admin), seguridad y dashboard que consume `/api/datos` | Listo |
 | 4 | Despliegue en Render | Pendiente |
 
 El detalle de cada fase y de la seguridad está en `docs/plan-preliminar.md`.
@@ -44,13 +44,16 @@ backend/
       partes.py        estandarización de números de parte
   scripts/
     probar_conexion.py prueba rápida de acceso a la hoja
+    servidor_demo.py   dashboard con datos inventados, sin llave de Google
     crear_hash.py      genera el hash del admin y la SECRET_KEY
   tests/               pruebas automáticas (pytest backend/tests)
   credenciales.json    llave del robot (NO se sube, está en .gitignore)
 frontend/
+  index.html           dashboard (KPIs, pareto, tendencias, turnos, partes, detalle)
   login.html           pantalla de inicio de sesión
   css/base.css         colores y componentes compartidos (del dashboard original)
-  css/login.css
+  css/dashboard.css, css/login.css
+  js/dashboard.js      pide /api/datos y calcula todo en el navegador (sin innerHTML)
   js/login.js          envía el login a /api/login y pasa al dashboard
 docs/
   plan-preliminar.md

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tablero de Calidad — Inspección HBPO</title>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 id="titulo">TABLERO DE CALIDAD — INSPECCIÓN</h1>
+      <div class="sub" id="subtitulo">Cargando datos…</div>
+    </div>
+    <div class="actions">
+      <span class="quien" id="quien"></span>
+      <button class="btn" id="btnActualizar" type="button">Actualizar</button>
+      <button class="btn" id="btnReset" type="button">Limpiar filtros</button>
+      <button class="btn" id="btnCsv" type="button">Descargar CSV</button>
+      <button class="btn primary" id="btnImprimir" type="button">Imprimir / PDF</button>
+      <button class="btn" id="btnSalir" type="button">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <div class="estado" id="estado"></div>
+
+  <section class="filters" id="filters">
+    <div class="f"><label for="fAnio">Año</label><select id="fAnio"><option value="">Todos</option></select></div>
+    <div class="f"><label for="fMes">Mes</label><select id="fMes"><option value="">Todos</option></select></div>
+    <div class="f"><label for="fTurno">Turno</label><select id="fTurno"><option value="">Todos</option></select></div>
+    <div class="f wide"><label for="fParte">Número de parte</label><input id="fParte" list="partesList" placeholder="Escribe o elige un número de parte…" autocomplete="off"><datalist id="partesList"></datalist></div>
+    <div class="f"><label for="fDef">Defecto</label><select id="fDef"><option value="">Todos</option></select></div>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="kpis" id="kpis"></section>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-head"><div><h2>Pareto de defectos</h2><div class="cap">Piezas con cada tipo de defecto y porcentaje acumulado. Clic en una barra para filtrar por defecto.</div></div></div>
+      <div class="legend"><span><i class="c1"></i>Piezas con defecto</span><span><i class="line c7"></i>% acumulado</span></div>
+      <div class="chart" id="chPareto"></div>
+      <div class="tbl-wrap" id="tbPareto"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><h2>Tendencia diaria</h2><div class="cap">% scrap por día sobre piezas inspeccionadas (últimos 31 días con captura). Clic en un día para filtrar.</div></div></div>
+      <div class="legend"><span><i class="line c1"></i>% Scrap</span><span><i class="cg"></i>Inspeccionadas (fondo)</span></div>
+      <div class="chart" id="chDia"></div>
+      <div class="tbl-wrap" id="tbDia"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><h2>Tendencia mensual</h2><div class="cap">% scrap por mes sobre piezas inspeccionadas. Clic en un mes para filtrar.</div></div></div>
+      <div class="legend"><span><i class="line c1"></i>% Scrap</span><span><i class="cg"></i>Inspeccionadas (fondo)</span></div>
+      <div class="chart" id="chMes"></div>
+      <div class="tbl-wrap" id="tbMes"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><h2>Desempeño por turno</h2><div class="cap">Inspeccionadas y scrap por turno. Clic en un turno para filtrar.</div></div></div>
+      <div class="legend"><span><i class="c1"></i>% Scrap</span></div>
+      <div class="chart" id="chTurno"></div>
+      <div class="tbl-wrap" id="tbTurno"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><h2>Top 15 números de parte por scrap</h2><div class="cap">Partes con más piezas rechazadas. Clic en una parte para filtrar.</div></div></div>
+      <div class="chart" id="chTop"></div>
+      <div class="tbl-wrap" id="tbTop"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><h2>Validación de registros</h2><div class="cap">REVISAR cuando las piezas NOK superan a las inspeccionadas; SIN INSPECCIÓN cuando no hay piezas inspeccionadas.</div></div></div>
+      <div class="chart" id="chVal"></div>
+      <div class="tbl-wrap" id="tbVal"></div>
+    </div>
+    <div class="card full">
+      <div class="card-head"><div><h2>Detalle de registros</h2><div class="cap" id="detCap"></div></div><button class="btn" id="btnMore" type="button">Mostrar más</button></div>
+      <div class="tbl-wrap alta" id="tbDet"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span id="pieIzq"></span>
+    <span>Cifras calculadas en vivo a partir de la hoja de inspección. Scrap = piezas NOK; retrabajo = piezas inspeccionadas.</span>
+  </footer>
+</div>
+<div class="tip" id="tip"></div>
+
+<script src="/js/dashboard.js"></script>
+</body>
+</html>
