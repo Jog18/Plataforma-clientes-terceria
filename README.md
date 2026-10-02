@@ -28,6 +28,9 @@ backend/
     config.py          configuración por variables de entorno / .env
     clientes.py        catálogo de clientes (hoy solo HBPO)
     dependencias.py    Depends: cliente y fuente (aquí entrarán login y permisos)
+    seguridad/
+      contrasenas.py   hash y verificación Argon2id
+      cabeceras.py     cabeceras HTTP de seguridad (CSP, HSTS, no-store...)
     routers/datos.py   GET /api/salud, GET /api/datos
     fuentes/gsheets.py lectura de Google Sheets con caché
     servicios/
@@ -35,11 +38,14 @@ backend/
       partes.py        estandarización de números de parte
   scripts/
     probar_conexion.py prueba rápida de acceso a la hoja
+    crear_hash.py      genera el hash del admin y la SECRET_KEY
+  tests/               pruebas automáticas (pytest backend/tests)
   credenciales.json    llave del robot (NO se sube, está en .gitignore)
 docs/
   plan-preliminar.md
   referencia/dashboard-original-grammer.html   dashboard original con datos fijos
 requirements.txt
+requirements-dev.txt   lo de arriba más pytest, para correr las pruebas
 .env.ejemplo
 ```
 
@@ -69,7 +75,25 @@ como Lector con el correo de la cuenta de servicio.
   empieza con `MB`/`MC`, y se corta después de `BCS`. Excepciones en
   `CORRECCIONES` de `servicios/partes.py`.
 
+## Pruebas
+
+```bash
+pip install -r requirements-dev.txt
+pytest backend/tests
+```
+
 ## Configuración
 
 Todo tiene valor por defecto. Para cambiar algo, copia `.env.ejemplo` como `.env`.
 En Render, la llave será un *Secret File* y su ruta va en `CREDENCIALES`.
+
+### Seguridad
+
+- `ENTORNO=produccion` (en Render) apaga `/docs`, activa HSTS y exige
+  `SECRET_KEY`, `ADMIN_USUARIO` y `ADMIN_HASH`; si falta alguno, el servidor
+  no arranca. En desarrollo todo es opcional.
+- `python backend/scripts/crear_hash.py` genera el hash Argon2id del admin;
+  `--secret-key` genera la llave de las cookies. La contraseña nunca se escribe
+  en un archivo.
+- Todas las respuestas llevan cabeceras de seguridad y `/api/*` no se guarda
+  en caché del navegador. Detalle en `docs/plan-preliminar.md`, sección 5.

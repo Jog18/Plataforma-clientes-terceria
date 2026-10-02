@@ -11,9 +11,12 @@ Uso en el resto del código:
     config.sheet_id
 """
 
+import logging
+import secrets
 from pathlib import Path
+from typing import Literal
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Raíz del repositorio (dos niveles arriba de backend/app/).
@@ -34,6 +37,62 @@ class Config(BaseSettings):
     # Pestañas que usa el dashboard.
     pestana_inspeccion: str = "Inspeccion HBPO"
     pestana_defectos: str = "Detalle Defectos"
+
+    # ---- seguridad (Fase 3) ------------------------------------------------
+
+    # "desarrollo" en tu máquina, "produccion" en Render. En producción se
+    # apaga /docs, se activa HSTS y se exige que existan todos los secretos.
+    entorno: Literal["desarrollo", "produccion"] = "desarrollo"
+
+    # Llave con la que se firman las cookies de sesión. Quien la tenga puede
+    # fabricar sesiones, así que es secreta. Genérala con:
+    #     python backend/scripts/crear_hash.py --secret-key
+    secret_key: str = ""
+
+    # Usuario administrador. El hash sale de backend/scripts/crear_hash.py;
+    # la contraseña en texto plano nunca se escribe en ningún archivo.
+    admin_usuario: str = ""
+    admin_hash: str = ""
+
+    # Duración de la sesión y límite de intentos fallidos de login.
+    sesion_horas: int = 8
+    intentos_maximos: int = 5
+    bloqueo_minutos: int = 15
+
+    @property
+    def produccion(self) -> bool:
+        return self.entorno == "produccion"
+
+    @model_validator(mode="after")
+    def _revisar_seguridad(self) -> "Config":
+        # Importación aquí para no cargar argon2 si nadie usa la config.
+        from app.seguridad.contrasenas import es_hash_valido
+
+        if self.produccion:
+            # Mejor que el servidor no arranque a que se publique sin protección.
+            faltan = []
+            if len(self.secret_key) < 32:
+                faltan.append("SECRET_KEY (mínimo 32 caracteres)")
+            if not self.admin_usuario:
+                faltan.append("ADMIN_USUARIO")
+            if not es_hash_valido(self.admin_hash):
+                faltan.append("ADMIN_HASH (hash Argon2id de crear_hash.py)")
+            if faltan:
+                raise ValueError(
+                    "Configuración insegura para producción. Falta o es inválido: "
+                    + ", ".join(faltan)
+                )
+        else:
+            if not self.secret_key:
+                # En tu máquina se inventa una llave al arrancar: funciona,
+                # pero las sesiones se pierden cada vez que reinicias.
+                self.secret_key = secrets.token_urlsafe(48)
+                logging.getLogger(__name__).warning(
+                    "SECRET_KEY no definida: se usa una temporal (solo desarrollo)."
+                )
+            if self.admin_hash and not es_hash_valido(self.admin_hash):
+                raise ValueError("ADMIN_HASH no es un hash Argon2id válido.")
+        return self
 
     @field_validator("credenciales")
     @classmethod
