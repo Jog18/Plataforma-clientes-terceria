@@ -190,3 +190,22 @@ def test_raiz_con_sesion_no_se_guarda_en_cache(cliente):
     r = cliente.get("/")
     assert r.status_code == 200
     assert r.headers["Cache-Control"] == "no-store"
+
+
+# ---- dashboard (paso 4) ------------------------------------------------------
+
+def test_dashboard_sirve_html_con_sesion(cliente):
+    entrar(cliente)
+    r = cliente.get("/")
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith("text/html")
+    assert "/js/dashboard.js" in r.text and "<script>" not in r.text
+    assert cliente.get("/js/dashboard.js").status_code == 200
+    assert cliente.get("/css/dashboard.css").status_code == 200
+
+
+def test_dashboard_js_no_usa_innerhtml():
+    # Los textos de la hoja (comentarios, partes) se insertan como texto, nunca como HTML.
+    js = (BACKEND.parents[0] / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
+    codigo = "\n".join(l for l in js.splitlines() if not l.strip().startswith("//"))
+    assert "innerHTML" not in codigo and "insertAdjacentHTML" not in codigo
