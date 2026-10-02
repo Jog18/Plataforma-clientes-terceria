@@ -10,10 +10,12 @@ que llena la app de captura.
 |---|---|---|
 | 1 | Acceso a Google Sheets con cuenta de servicio | Listo |
 | 2 | Backend FastAPI (`/api/datos`) | Listo |
-| 3 | Frontend: dashboard que consume `/api/datos` | Pendiente |
+| 3 | Inicio de sesión (admin), seguridad y dashboard que consume `/api/datos` | En curso |
 | 4 | Despliegue en Render | Pendiente |
 
-Futuro: inicio de sesión por cliente, varios clientes (histórico Grammer),
+El detalle de cada fase y de la seguridad está en `docs/plan-preliminar.md`.
+
+Futuro: usuarios por cliente, varios clientes (histórico Grammer),
 base de datos relacional y permisos. La estructura del backend ya deja el
 lugar para cada uno.
 
