@@ -27,11 +27,17 @@ backend/
     main.py            crea la app, registra routers, sirve /frontend
     config.py          configuración por variables de entorno / .env
     clientes.py        catálogo de clientes (hoy solo HBPO)
-    dependencias.py    Depends: cliente y fuente (aquí entrarán login y permisos)
+    dependencias.py    Depends: usuario con sesión, cliente permitido, fuente
+    usuarios.py        de dónde salen los usuarios (hoy: el admin del .env)
+    esquemas.py        modelos Pydantic (login, usuario)
     seguridad/
       contrasenas.py   hash y verificación Argon2id
+      sesiones.py      cookie de sesión firmada
+      intentos.py      límite de intentos fallidos de login
       cabeceras.py     cabeceras HTTP de seguridad (CSP, HSTS, no-store...)
-    routers/datos.py   GET /api/salud, GET /api/datos
+    routers/
+      auth.py          POST /api/login, POST /api/logout, GET /api/yo
+      datos.py         GET /api/salud (pública), GET /api/datos (con sesión)
     fuentes/gsheets.py lectura de Google Sheets con caché
     servicios/
       inspeccion.py    limpieza de registros y reglas de negocio HBPO
@@ -59,8 +65,9 @@ uvicorn app.main:app --reload --app-dir backend
 ```
 
 - http://127.0.0.1:8000/api/salud: el servidor está vivo.
-- http://127.0.0.1:8000/api/datos: registros limpios de la hoja.
-- http://127.0.0.1:8000/docs: documentación interactiva.
+- http://127.0.0.1:8000/docs: documentación interactiva. Desde ahí puedes
+  probar `POST /api/login` con tu usuario y contraseña del `.env`.
+- http://127.0.0.1:8000/api/datos: registros limpios de la hoja (necesita sesión).
 
 Requiere la llave en `backend/credenciales.json` y que la hoja esté compartida
 como Lector con el correo de la cuenta de servicio.
@@ -96,4 +103,9 @@ En Render, la llave será un *Secret File* y su ruta va en `CREDENCIALES`.
   `--secret-key` genera la llave de las cookies. La contraseña nunca se escribe
   en un archivo.
 - Todas las respuestas llevan cabeceras de seguridad y `/api/*` no se guarda
-  en caché del navegador. Detalle en `docs/plan-preliminar.md`, sección 5.
+  en caché del navegador.
+- Login: sesión en cookie firmada (HttpOnly, SameSite=Strict, Secure en
+  producción) que dura `SESION_HORAS`. Tras `INTENTOS_MAXIMOS` fallos por IP
+  o por usuario, el login se bloquea `BLOQUEO_MINUTOS`. Cambiar la contraseña
+  del admin o la `SECRET_KEY` cierra todas las sesiones.
+- Detalle en `docs/plan-preliminar.md`, sección 5.

@@ -9,13 +9,15 @@ Luego abre http://127.0.0.1:8000/docs para probar las rutas (en producción
 
 from pathlib import Path
 
-from fastapi import FastAPI
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi import Depends, FastAPI
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import RAIZ_PROYECTO, config
-from app.routers import datos
+from app.dependencias import sesion_actual
+from app.routers import auth, datos
 from app.seguridad.cabeceras import CabecerasSeguridad
+from app.seguridad.sesiones import Sesion
 
 app = FastAPI(
     title="Plataforma Clientes Tercería",
@@ -29,21 +31,39 @@ app = FastAPI(
 # Cabeceras de seguridad en todas las respuestas (ver seguridad/cabeceras.py).
 app.add_middleware(CabecerasSeguridad, produccion=config.produccion)
 
-# Cada router se registra aquí. Mañana: app.include_router(auth.router), etc.
+# Cada router se registra aquí.
+app.include_router(auth.router)
 app.include_router(datos.router)
 
-# El frontend (Fase 3) vivirá en /frontend y se sirve desde el mismo servidor.
+# El frontend vive en /frontend y se sirve desde el mismo servidor.
 FRONTEND = RAIZ_PROYECTO / "frontend"
 INDEX = FRONTEND / "index.html"
+LOGIN = FRONTEND / "login.html"
 
 
 @app.get("/", include_in_schema=False)
-def inicio():
+def inicio(sesion: Sesion | None = Depends(sesion_actual)):
+    """El dashboard. Sin sesión, manda a la pantalla de inicio de sesión."""
+    if sesion is None:
+        return RedirectResponse("/login", status_code=303)
     if INDEX.exists():
         return FileResponse(INDEX)
     return JSONResponse({
-        "mensaje": "Backend activo. El dashboard llega en la Fase 3.",
-        "rutas": ["/api/salud", "/api/datos", "/docs"],
+        "mensaje": f"Sesión iniciada como {sesion.usuario}. El dashboard llega en el paso 4.",
+        "rutas": ["/api/datos", "/api/yo", "/api/logout"],
+    })
+
+
+@app.get("/login", include_in_schema=False)
+def pantalla_login(sesion: Sesion | None = Depends(sesion_actual)):
+    """La pantalla de inicio de sesión. Con sesión ya abierta, va al dashboard."""
+    if sesion is not None:
+        return RedirectResponse("/", status_code=303)
+    if LOGIN.exists():
+        return FileResponse(LOGIN)
+    return JSONResponse({
+        "mensaje": "Pantalla de inicio de sesión: llega en el paso 3. "
+                   "Mientras, usa POST /api/login desde /docs.",
     })
 
 
