@@ -71,6 +71,13 @@
   };
   var fechaLbl = function (f) { var p = f.split("-"); return p[2] + "/" + p[1] + "/" + p[0]; };
   var diaCorto = function (f) { var p = f.split("-"); return p[2] + "/" + p[1]; };
+  // Clave para ordenar por fecha y hora: "2026-10-02 08:21:42". Se rellena la
+  // hora con ceros porque como texto "8:21:42" quedaría después de "13:03:42".
+  var claveFechaHora = function (r) {
+    var p = (r.hora || "").split(":").map(function (x) { return ("0" + x).slice(-2); });
+    while (p.length < 3) p.push("00");
+    return r.fecha + " " + p.slice(0, 3).join(":");
+  };
   var ratio = function (a, b) { return b ? a / b : 0; };
   var suma = function (arr, k) { return arr.reduce(function (a, r) { return a + r[k]; }, 0); };
 
@@ -306,7 +313,7 @@
     var top = porDef[0] || ["—", 0];
     var partes = unicos(F.map(function (r) { return r.parte; })).length;
     var rev = F.filter(function (r) { return r.val === "REVISAR"; }).length;
-    var ultimo = F.length ? F.reduce(function (a, r) { return (r.fecha + r.hora) > (a.fecha + a.hora) ? r : a; }, F[0]) : null;
+    var ultimo = F.length ? F.reduce(function (a, r) { return claveFechaHora(r) > claveFechaHora(a) ? r : a; }, F[0]) : null;
 
     var k = [
       ["Piezas inspeccionadas", fmt(insp), fmt(F.length) + " registros", "hero accent"],
@@ -536,7 +543,7 @@
   // ---- Detalle ------------------------------------------------------------------------
 
   function renderDet(F) {
-    var rows = F.slice().sort(function (a, b) { return (b.fecha + b.hora).localeCompare(a.fecha + a.hora); }).slice(0, detLimit);
+    var rows = F.slice().sort(function (a, b) { return claveFechaHora(b).localeCompare(claveFechaHora(a)); }).slice(0, detLimit);
     $("detCap").textContent = fmt(F.length) + " registros en la selección · mostrando " + fmt(rows.length) + " (más recientes primero)";
     $("btnMore").style.display = F.length > detLimit ? "" : "none";
     var filas = rows.map(function (r) {

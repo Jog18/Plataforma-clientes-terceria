@@ -80,6 +80,21 @@ def leer_id(texto: str) -> str:
     return (texto or "").strip().lower()
 
 
+def normalizar_hora(texto: str) -> str:
+    """'8:21:42' -> '08:21:42', '13:03' -> '13:03:00'.
+
+    La hoja guarda la hora sin cero a la izquierda. Como texto, '8:21:42'
+    queda después de '13:03:42' al ordenar o comparar, así que se entrega
+    siempre con dos dígitos por parte. Si no se entiende, se regresa tal cual.
+    """
+    texto = limpiar_texto(texto)
+    partes = texto.split(":")
+    if not texto or not 2 <= len(partes) <= 3 or not all(p.strip().isdigit() for p in partes):
+        return texto
+    h, m, seg = ([int(p) for p in partes] + [0])[:3]
+    return f"{h:02d}:{m:02d}:{seg:02d}"
+
+
 def _hora_ordenable(hora: str) -> tuple[int, int, int]:
     """'8:26:31' -> (8, 26, 31) para ordenar bien ('10:00' va después de '9:00')."""
     partes = [a_entero(p) for p in (hora or "").split(":")]
@@ -121,7 +136,7 @@ def limpiar_registro(fila: dict, defectos: list[dict]) -> dict | None:
         "id": id_insp,
         "fecha": fecha.isoformat(),          # 'YYYY-MM-DD', fácil de ordenar y filtrar
         "turno": limpiar_texto(fila.get(COL_TURNO, "")),
-        "hora": limpiar_texto(fila.get(COL_HORA, "")),
+        "hora": normalizar_hora(fila.get(COL_HORA, "")),
         "parte": estandarizar_parte(fila.get(COL_PARTE, "")),
         "serial": limpiar_texto(fila.get(COL_SERIAL, "")),
         "fecha_produccion": fecha_prod.isoformat() if fecha_prod else None,
