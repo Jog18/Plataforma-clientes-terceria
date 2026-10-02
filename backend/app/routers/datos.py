@@ -1,8 +1,11 @@
 """Rutas de datos del dashboard.
 
 Un "router" es un grupo de rutas con un prefijo común (/api). main.py lo
-registra en la app. Cuando haya rutas de login o de administración, van en
-su propio archivo dentro de routers/.
+registra en la app. Las rutas de login viven en routers/auth.py.
+
+/api/datos exige sesión: `obtener_cliente` depende de `usuario_actual`, que
+responde 401 si no hay cookie válida. /api/salud sigue pública porque Render
+la usa para vigilar el servicio.
 """
 
 import gspread
