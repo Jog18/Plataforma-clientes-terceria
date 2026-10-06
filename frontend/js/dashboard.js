@@ -319,15 +319,14 @@
 
     var k = [
       ["Piezas inspeccionadas", fmt(insp), fmt(F.length) + " registros", "hero accent"],
-      ["Piezas OK", fmt(ok), "Inspeccionadas − NOK", ""],
+      ["Piezas OK", fmt(ok), "", ""],
       ["Scrap (pzs NOK)", fmt(scrap), "Piezas rechazadas", "accent"],
-      ["% Scrap", pct(pS), "NOK / inspeccionadas", ""],
+      ["% Scrap", pct(pS), "", ""],
       ["PPM Scrap", fmt(pS * 1e6), "Partes por millón", ""],
       ["FTT (% OK)", pct(ftt), "First Time Through", ""],
-      ["Piezas retrabajadas", fmt(rw), "Igual a inspeccionadas", "accent2"],
       ["Defecto principal", top[0], "Más piezas en el periodo", "small"],
       ["Pzs defecto principal", fmt(top[1]), scrap ? pct(ratio(top[1], scrap), 1) + " del scrap" : "—", ""],
-      ["N° de partes distintas", fmt(partes), "de " + PARTES.length + " en la hoja", ""],
+      ["N° de partes distintas", fmt(partes), "", ""],
       ["Filas a revisar", fmt(rev), "NOK > inspeccionadas", rev ? "warn" : ""],
       ["Último registro", ultimo ? fechaLbl(ultimo.fecha) : "—", ultimo ? (ultimo.hora + " · turno " + ultimo.turno) : "", "small"]
     ];
