@@ -4,6 +4,7 @@ header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justif
 header.top h1{margin:0;font-size:22px;font-weight:700;letter-spacing:.2px}
 header.top .sub{color:var(--ink-2);margin-top:4px;font-size:13px}
 header.top .sub b{color:var(--ink);font-weight:600}
+.logo-print,.solo-impresion{display:none}
 .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .actions .quien{color:var(--ink-2);font-size:12.5px;margin-right:4px}
 
@@ -91,6 +92,12 @@ footer{color:var(--ink-3);font-size:12px;margin-top:20px;display:flex;flex-wrap:
 }
 @media print{
   body{background:#fff}footer{display:none}
+  /* Encabezado del reporte: logo a la izquierda y título centrado. */
+  header.top{display:grid;grid-template-columns:90px 1fr 90px;align-items:center;margin-bottom:12px}
+  .logo-print{display:block;width:80px;height:auto}
+  .encabezado{text-align:center}
+  header.top h1{font-size:20px}
+  .solo-pantalla{display:none}.solo-impresion{display:inline}
   .wrap{max-width:none;padding:0}
   th{position:static}table{font-size:9px}th,td{padding:3px 4px}th{font-size:8px}td.texto{max-width:none}.actions,.filters .f{display:none}
   .card,.kpi{box-shadow:none;break-inside:avoid}.tbl-wrap{max-height:none;overflow:visible}

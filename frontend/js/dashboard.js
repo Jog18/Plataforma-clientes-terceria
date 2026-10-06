@@ -206,7 +206,9 @@
       var f0 = ROWS[0].fecha, f1 = ROWS[ROWS.length - 1].fecha;
       ROWS.forEach(function (r) { if (r.fecha < f0) f0 = r.fecha; if (r.fecha > f1) f1 = r.fecha; });
       poner($("subtitulo"), ["Periodo: ", h("b", null, fechaLbl(f0)), " al ", h("b", null, fechaLbl(f1)),
-        "  |  Registros: ", h("b", null, fmt(ROWS.length)), "  |  Fuente: Google Sheets en vivo"]);
+        "  |  Registros: ", h("b", null, fmt(ROWS.length)),
+        h("span", { class: "solo-pantalla" }, "  |  Fuente: Google Sheets en vivo"),
+        h("span", { class: "solo-impresion" }, "  |  Consultado: ", h("b", { id: "consultado" }, ahoraLbl()))]);
       $("pieIzq").textContent = "Último registro " + fechaLbl(f1) + " · datos leídos " +
         (paquete.generado || "").replace("T", " ").slice(0, 16) +
         (paquete.descartados ? " · " + fmt(paquete.descartados) + " filas descartadas por falta de ID o fecha" : "");
@@ -583,6 +585,15 @@
 
   // ---- botones de cabecera ----------------------------------------------------------------
 
+  // En el reporte impreso, "Consultado" lleva la fecha y hora en que se genera.
+  function ahoraLbl() {
+    var d = new Date(), dos = function (n) { return (n < 10 ? "0" : "") + n; };
+    return dos(d.getDate()) + "/" + dos(d.getMonth() + 1) + "/" + d.getFullYear() + " " + dos(d.getHours()) + ":" + dos(d.getMinutes());
+  }
+  window.addEventListener("beforeprint", function () {
+    var c = $("consultado");
+    if (c) c.textContent = ahoraLbl();
+  });
   $("btnImprimir").addEventListener("click", function () { window.print(); });
   $("btnActualizar").addEventListener("click", function () { cargar(true); });
   $("btnSalir").addEventListener("click", function () {
