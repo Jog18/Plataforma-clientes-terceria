@@ -11,9 +11,11 @@ que llena la app de captura.
 | 1 | Acceso a Google Sheets con cuenta de servicio | Listo |
 | 2 | Backend FastAPI (`/api/datos`) | Listo |
 | 3 | Inicio de sesión (admin), seguridad y dashboard que consume `/api/datos` | Listo |
-| 4 | Despliegue en Render | Pendiente |
+| 4 | Despliegue en Render: https://plataforma-qsb.onrender.com | Listo |
+| 5 | Varios clientes (usuarios por cliente, base de datos, histórico Grammer) | Pendiente |
 
-El detalle de cada fase y de la seguridad está en `docs/plan-preliminar.md`.
+El detalle de cada fase y de la seguridad está en `docs/plan-preliminar.md`;
+el despliegue en `docs/fase4-render.md`. Qué cambió en cada versión: `CHANGELOG.md`.
 
 Futuro: usuarios por cliente, varios clientes (histórico Grammer),
 base de datos relacional y permisos. La estructura del backend ya deja el
@@ -53,11 +55,14 @@ frontend/
   login.html           pantalla de inicio de sesión
   css/base.css         colores y componentes compartidos (del dashboard original)
   css/dashboard.css, css/login.css
+  img/logo-qsb.jpg     logo de la pantalla de inicio de sesión
   js/dashboard.js      pide /api/datos y calcula todo en el navegador (sin innerHTML)
   js/login.js          envía el login a /api/login y pasa al dashboard
 docs/
-  plan-preliminar.md
+  plan-preliminar.md   plan por fases y diseño de la seguridad
+  fase4-render.md      por qué Render y cómo se publicó
   referencia/dashboard-original-grammer.html   dashboard original con datos fijos
+CHANGELOG.md           historial de versiones
 requirements.txt
 requirements-dev.txt   lo de arriba más pytest, para correr las pruebas
 .env.ejemplo
@@ -142,3 +147,25 @@ El servicio se describe en `render.yaml`. Render publica solo desde `main` y
 
 Plan gratuito: el servicio se duerme tras 15 min sin visitas y la siguiente
 visita tarda unos 30 a 60 s en despertar. Para evitarlo, cambiar a *Starter*.
+
+## Versiones y cómo regresar a una anterior
+
+Cada cambio entra a `main` por un PR, y `main` es lo que Render publica. Así
+nada se pierde: cada versión queda guardada en GitHub. Las versiones
+importantes llevan etiqueta (`v1.0.0`, `v1.1.0`, ...) y se anotan en
+`CHANGELOG.md`.
+
+Para regresar, de lo más rápido a lo más permanente:
+
+1. **Render, botón Rollback** (segundos): en el servicio, *Events* o
+   *Deploys*, elige un despliegue anterior y pulsa *Rollback*. El sitio
+   vuelve a esa versión de inmediato, pero el código en GitHub no cambia;
+   además, Render desactiva la publicación automática hasta que la vuelvas a
+   encender.
+2. **GitHub, botón Revert del PR** (minutos): abre el PR que causó el
+   problema y pulsa *Revert*. GitHub crea un PR que deshace ese cambio; al
+   mezclarlo, Render publica la versión corregida. Es la forma recomendada
+   porque el historial queda claro.
+3. **Ver o descargar una versión etiquetada**: en GitHub, *Tags*, o en Git
+   Bash `git checkout v1.0.0` para verla en tu máquina (y `git checkout main`
+   para volver).
