@@ -80,8 +80,19 @@ footer{color:var(--ink-3);font-size:12px;margin-top:20px;display:flex;flex-wrap:
 @media (max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:900px){.grid{grid-template-columns:1fr}}
 @media (max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}.kpi .v{font-size:22px}}
+/* Al imprimir: al definir contenido propio en los márgenes de la hoja, Chrome
+   y Edge (versión 131 o más nueva) ya no agregan la URL, la fecha ni el título;
+   en su lugar va el nombre del reporte y el número de página. */
+@page{
+  margin:12mm 10mm;
+  @top-left{content:none}@top-center{content:none}@top-right{content:none}
+  @bottom-left{content:"Tablero de Calidad · Inspección HBPO";font:9px sans-serif;color:#888}
+  @bottom-right{content:"Página " counter(page) " de " counter(pages);font:9px sans-serif;color:#888}
+}
 @media print{
-  body{background:#fff}.wrap{max-width:none;padding:0}.actions,.filters .f{display:none}
+  body{background:#fff}footer{display:none}
+  .wrap{max-width:none;padding:0}
+  th{position:static}table{font-size:9px}th,td{padding:3px 4px}th{font-size:8px}td.texto{max-width:none}.actions,.filters .f{display:none}
   .card,.kpi{box-shadow:none;break-inside:avoid}.tbl-wrap{max-height:none;overflow:visible}
   .grid{grid-template-columns:1fr 1fr}
 }
