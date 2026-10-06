@@ -1,0 +1,29 @@
+# Blueprint de Render: describe el servicio para que Render lo cree solo.
+# Los secretos NO van aquí: los que tienen "sync: false" los pide Render en su
+# página al crear el servicio, y la llave de Google se sube aparte como
+# Secret File llamado credenciales.json (Environment > Secret Files).
+services:
+  - type: web
+    name: plataforma-qsb
+    runtime: python
+    plan: free
+    region: ohio
+    branch: main
+    # Publica solo cuando las pruebas de GitHub (.github/workflows) pasan.
+    autoDeployTrigger: checksPass
+    buildCommand: pip install -r requirements.txt
+    # Un solo proceso: el caché de la hoja y el contador de intentos de login
+    # viven en memoria.
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --app-dir backend
+    healthCheckPath: /api/salud
+    envVars:
+      - key: ENTORNO
+        value: produccion
+      - key: CREDENCIALES
+        value: /etc/secrets/credenciales.json
+      - key: SECRET_KEY
+        sync: false
+      - key: ADMIN_USUARIO
+        sync: false
+      - key: ADMIN_HASH
+        sync: false
