@@ -4,7 +4,20 @@ header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justif
 header.top h1{margin:0;font-size:22px;font-weight:700;letter-spacing:.2px}
 header.top .sub{color:var(--ink-2);margin-top:4px;font-size:13px}
 header.top .sub b{color:var(--ink);font-weight:600}
-.logo-print,.solo-impresion{display:none}
+.solo-impresion{display:none}
+.marca{display:flex;align-items:center;gap:16px;padding-left:8px}
+.marca .logo{width:56px;height:auto;border-radius:6px;flex:none}
+/* ventana de descarga del CSV */
+.dlg{border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;max-width:420px;width:calc(100% - 32px);box-shadow:var(--shadow)}
+.dlg::backdrop{background:rgba(15,23,42,.35)}
+.dlg h2{margin:0 0 12px;font-size:17px}
+.dlg .opciones{display:flex;gap:18px;margin-bottom:12px}
+.dlg .fechas{display:flex;gap:12px;margin-bottom:12px}
+.dlg .fechas .f{flex:1;display:flex;flex-direction:column;gap:4px}
+.dlg .fechas input{padding:7px 9px;border:1px solid var(--line);border-radius:8px}
+.dlg .check{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--ink-2)}
+.dlg .aviso{color:var(--err);font-size:13px;margin:10px 0 0}
+.dlg .botones{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .actions .quien{color:var(--ink-2);font-size:12.5px;margin-right:4px}
 
@@ -94,7 +107,7 @@ footer{color:var(--ink-3);font-size:12px;margin-top:20px;display:flex;flex-wrap:
   body{background:#fff}footer{display:none}
   /* Encabezado del reporte: logo a la izquierda y título centrado. */
   header.top{display:grid;grid-template-columns:90px 1fr 90px;align-items:center;margin-bottom:12px}
-  .logo-print{display:block;width:80px;height:auto}
+  .marca{display:contents}.marca .logo{width:80px;border-radius:0}
   .encabezado{text-align:center}
   header.top h1{font-size:20px}
   .solo-pantalla{display:none}.solo-impresion{display:inline}

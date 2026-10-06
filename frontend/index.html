@@ -5,15 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tablero de Calidad — Inspección HBPO</title>
 <link rel="stylesheet" href="/css/base.css">
-<link rel="stylesheet" href="/css/dashboard.css?v=3">
+<link rel="stylesheet" href="/css/dashboard.css?v=4">
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <img class="logo-print" src="/img/logo-qsb.jpg" alt="Logo QSB" width="80" height="119">
-    <div class="encabezado">
+    <div class="marca">
+      <img class="logo" src="/img/logo-qsb.jpg" alt="Logo QSB" width="80" height="119">
+      <div class="encabezado">
       <h1 id="titulo">TABLERO DE CALIDAD — INSPECCIÓN</h1>
       <div class="sub" id="subtitulo">Cargando datos…</div>
+      </div>
     </div>
     <div class="actions">
       <span class="quien" id="quien"></span>
@@ -24,6 +26,26 @@
       <button class="btn" id="btnSalir" type="button">Cerrar sesión</button>
     </div>
   </header>
+
+  <dialog class="dlg" id="dlgCsv" aria-labelledby="dlgCsvTitulo">
+    <form method="dialog" id="formCsv">
+      <h2 id="dlgCsvTitulo">Descargar CSV</h2>
+      <div class="opciones">
+        <label><input type="radio" name="csvModo" value="dia" checked> Un solo día</label>
+        <label><input type="radio" name="csvModo" value="rango"> Rango de días</label>
+      </div>
+      <div class="fechas">
+        <div class="f"><label for="csvDesde" id="csvDesdeLbl">Día</label><input type="date" id="csvDesde" required></div>
+        <div class="f" id="csvHastaCaja" hidden><label for="csvHasta">Hasta</label><input type="date" id="csvHasta"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="csvFiltros" checked> Aplicar también los filtros del tablero (turno, parte, defecto)</label>
+      <p class="aviso" id="csvAviso" hidden></p>
+      <div class="botones">
+        <button class="btn" type="button" id="csvCancelar">Cancelar</button>
+        <button class="btn primary" type="submit" id="csvDescargar">Descargar</button>
+      </div>
+    </form>
+  </dialog>
 
   <div class="estado" id="estado"></div>
 
@@ -86,6 +108,6 @@
 </div>
 <div class="tip" id="tip"></div>
 
-<script src="/js/dashboard.js?v=3"></script>
+<script src="/js/dashboard.js?v=4"></script>
 </body>
 </html>
