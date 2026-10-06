@@ -231,7 +231,10 @@ Se hace en pasos, cada uno en su PR y probado antes de seguir:
    segura de texto, botón "Cerrar sesión" y redirección a `/login` si la
    sesión vence.
 
-### Fase 4: Despliegue en Render
+### Fase 4: Despliegue en Render (lista, 6 de octubre de 2026)
+
+Publicado en https://plataforma-qsb.onrender.com. Detalle en `docs/fase4-render.md`.
+
 
 * Servicio web con `uvicorn app.main:app --host 0.0.0.0 --port $PORT --app-dir backend`.
 * Variables de la tabla 5.10 y la llave como Secret File.
