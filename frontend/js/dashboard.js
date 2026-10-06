@@ -329,7 +329,7 @@
       ["Defecto principal", top[0], "Más piezas en el periodo", "small"],
       ["Pzs defecto principal", fmt(top[1]), scrap ? pct(ratio(top[1], scrap), 1) + " del scrap" : "—", ""],
       ["N° de partes distintas", fmt(partes), "", ""],
-      ["Filas a revisar", fmt(rev), "NOK > inspeccionadas", rev ? "warn" : ""],
+      ["Filas a revisar", fmt(rev), "", rev ? "warn" : ""],
       ["Último registro", ultimo ? fechaLbl(ultimo.fecha) : "—", ultimo ? (ultimo.hora + " · turno " + ultimo.turno) : "", "small"]
     ];
     poner($("kpis"), k.map(function (x) {
@@ -567,20 +567,68 @@
     var t = String(v === undefined || v === null ? "" : v);
     return /[",\n;]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
   }
-  $("btnCsv").addEventListener("click", function () {
-    var F = filtrados();
+  // El CSV se pide por un solo día o por un rango de días. Opcionalmente se
+  // aplican también los filtros del tablero que no son de fecha.
+  function filasCsv(desde, hasta, conFiltros) {
+    var parteQ = state.parte.toUpperCase();
+    return ROWS.filter(function (r) {
+      if (r.fecha < desde || r.fecha > hasta) return false;
+      if (!conFiltros) return true;
+      return (!state.turno || r.turno === state.turno) &&
+        (!parteQ || r.parte.toUpperCase().indexOf(parteQ) !== -1) &&
+        (state.def === "" || r.d[+state.def] > 0);
+    });
+  }
+  function descargarCsv(F, nombre) {
     var head = ["ID", "FECHA", "HORA", "TURNO", "NUMERO DE PARTE", "SERIAL", "PIEZAS INSP", "PIEZAS NOK", "PIEZAS OK", "% SCRAP"].concat(DEF, ["COMENTARIOS", "VALIDACION"]);
     var lines = [head.map(csvCelda).join(",")];
     F.forEach(function (r) {
       lines.push([r.id, r.fecha, r.hora, r.turno, r.parte, r.serial, r.insp, r.nok, r.ok, ratio(r.nok, r.insp).toFixed(4)]
         .concat(r.d, [r.comentarios, r.val]).map(csvCelda).join(","));
     });
-    var blob = new Blob(["﻿" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    var blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
     var a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "inspeccion_" + (D && D.cliente ? D.cliente.toLowerCase() : "datos") + "_filtrado.csv";
+    a.download = nombre;
     a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  }
+  function modoCsv() { return document.querySelector('input[name="csvModo"]:checked').value; }
+  function ajustarModoCsv() {
+    var rango = modoCsv() === "rango";
+    $("csvHastaCaja").hidden = !rango;
+    $("csvDesdeLbl").textContent = rango ? "Desde" : "Día";
+    $("csvAviso").hidden = true;
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="csvModo"]'), function (el) {
+    el.addEventListener("change", ajustarModoCsv);
+  });
+  $("btnCsv").addEventListener("click", function () {
+    if (!ROWS.length) return;
+    var f0 = ROWS[0].fecha, f1 = ROWS[0].fecha;
+    ROWS.forEach(function (r) { if (r.fecha < f0) f0 = r.fecha; if (r.fecha > f1) f1 = r.fecha; });
+    ["csvDesde", "csvHasta"].forEach(function (id) { $(id).min = f0; $(id).max = f1; });
+    if (!$("csvDesde").value) $("csvDesde").value = state.dia || f1;
+    if (!$("csvHasta").value) $("csvHasta").value = f1;
+    ajustarModoCsv();
+    $("dlgCsv").showModal();
+  });
+  $("csvCancelar").addEventListener("click", function () { $("dlgCsv").close(); });
+  $("formCsv").addEventListener("submit", function (e) {
+    var rango = modoCsv() === "rango";
+    var desde = $("csvDesde").value, hasta = rango ? $("csvHasta").value : desde;
+    var aviso = "";
+    if (!desde || !hasta) aviso = "Elige las fechas.";
+    else if (hasta < desde) aviso = "La fecha final es anterior a la inicial.";
+    var F = aviso ? [] : filasCsv(desde, hasta, $("csvFiltros").checked);
+    if (!aviso && !F.length) aviso = "No hay registros en esas fechas.";
+    if (aviso) {
+      e.preventDefault();
+      $("csvAviso").textContent = aviso; $("csvAviso").hidden = false;
+      return;
+    }
+    var cliente = D && D.cliente ? D.cliente.toLowerCase() : "datos";
+    descargarCsv(F, "inspeccion_" + cliente + "_" + desde + (rango && hasta !== desde ? "_a_" + hasta : "") + ".csv");
   });
 
   // ---- botones de cabecera ----------------------------------------------------------------
