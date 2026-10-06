@@ -61,6 +61,9 @@ docs/
 requirements.txt
 requirements-dev.txt   lo de arriba más pytest, para correr las pruebas
 .env.ejemplo
+.python-version        versión de Python (3.13), la usan Render y GitHub
+render.yaml            configuración del servicio en Render
+.github/workflows/pruebas.yml   corre las pruebas en cada PR y en main
 ```
 
 ## Correr en local (Git Bash)
@@ -121,3 +124,21 @@ En Render, la llave será un *Secret File* y su ruta va en `CREDENCIALES`.
   o por usuario, el login se bloquea `BLOQUEO_MINUTOS`. Cambiar la contraseña
   del admin o la `SECRET_KEY` cierra todas las sesiones.
 - Detalle en `docs/plan-preliminar.md`, sección 5.
+
+## Publicar en Render (Fase 4)
+
+El servicio se describe en `render.yaml`. Render publica solo desde `main` y
+únicamente cuando las pruebas de GitHub pasan.
+
+1. Genera secretos nuevos en tu máquina (no reutilices los del `.env`):
+   `python backend/scripts/crear_hash.py --secret-key` y
+   `python backend/scripts/crear_hash.py` (hash de la contraseña del admin).
+2. En render.com (cuenta personal), *New → Blueprint*, elige este
+   repositorio. Render pide `SECRET_KEY`, `ADMIN_USUARIO` y `ADMIN_HASH`
+   (el hash se pega sin comillas).
+3. En el servicio, *Environment → Secret Files*, sube la llave del robot con
+   el nombre `credenciales.json` (queda en `/etc/secrets/credenciales.json`).
+4. Revisa `https://<servicio>.onrender.com/api/salud` y entra con el login.
+
+Plan gratuito: el servicio se duerme tras 15 min sin visitas y la siguiente
+visita tarda unos 30 a 60 s en despertar. Para evitarlo, cambiar a *Starter*.
