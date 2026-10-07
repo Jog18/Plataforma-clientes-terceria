@@ -25,4 +25,6 @@ button,select,input{font:inherit}
 .aviso{border-radius:8px;padding:9px 11px;font-size:13px}
 .aviso.error{background:var(--err-bg);color:var(--err)}
 .aviso.alerta{background:var(--warn-bg);color:var(--warn)}
-.aviso[hidden]{display:none}
+/* Lo que lleva el atributo hidden no se ve, aunque otra regla le ponga display
+   (por ejemplo la casilla "Hasta" del diálogo de Excel en modo "Un solo día"). */
+[hidden]{display:none!important}
