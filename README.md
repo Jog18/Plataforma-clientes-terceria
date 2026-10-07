@@ -101,6 +101,11 @@ como Lector con el correo de la cuenta de servicio.
 - Números de parte: mayúsculas sin espacios, sin `P` inicial, `8` al inicio si
   empieza con `MB`/`MC`, y se corta después de `BCS`. Excepciones en
   `CORRECCIONES` de `servicios/partes.py`.
+- Día de producción: de 6:00 a 5:59 del día siguiente. Turnos: 1ro 6:00–14:00,
+  2do 14:00–21:00, 3ro 21:30–6:00. Lo capturado antes de las 6:00 cuenta para el
+  día anterior, así el 3er turno queda completo en el día en que empieza. El
+  tablero agrupa y filtra por este día (`dia_produccion`); las tablas muestran la
+  fecha y hora reales de captura y el CSV trae las dos.
 
 ## Pruebas
 

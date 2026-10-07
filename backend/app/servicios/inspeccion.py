@@ -11,7 +11,7 @@ Reglas acordadas con Jesús (2026-09-30):
 """
 
 import re
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from app.servicios.partes import estandarizar_parte
 
@@ -33,6 +33,12 @@ COL_DEF_ID_INSP = "ID INSPECCION"
 COL_DEF_DEFECTO = "DEFECTO"
 COL_DEF_CANTIDAD = "CANTIDAD"
 COL_DEF_TEXTO = "TEXTO"
+
+# El día de producción cierra a las 6:00 (Jesús, 2026-10-07). Turnos:
+# 1ro 6:00-14:00, 2do 14:00-21:00, 3ro 21:30-6:00. Todo lo capturado antes
+# de las 6:00 cuenta para el día anterior, así el 3er turno completo queda en
+# el día en que empezó.
+HORA_CIERRE_DIA = 6
 
 # Formatos de fecha que acepta la limpieza, en orden de prueba.
 FORMATOS_FECHA = ("%d/%m/%Y", "%d/%m/%y", "%Y-%m-%d")
@@ -101,6 +107,21 @@ def _hora_ordenable(hora: str) -> tuple[int, int, int]:
     return tuple((partes + [0, 0, 0])[:3])
 
 
+def dia_produccion(fecha: date, hora: str) -> date:
+    """Día al que pertenece un registro: de 6:00 a 5:59 del día siguiente.
+
+    date(2026, 10, 6) + '02:30:00' -> date(2026, 10, 5)  (3er turno del lunes 5)
+    date(2026, 10, 6) + '06:00:00' -> date(2026, 10, 6)
+    Si la hora no se entiende, se queda la fecha de captura.
+    """
+    partes = (hora or "").split(":")
+    if not partes[0].strip().isdigit():
+        return fecha
+    if int(partes[0]) < HORA_CIERRE_DIA:
+        return fecha - timedelta(days=1)
+    return fecha
+
+
 # ---- limpieza de registros -------------------------------------------------
 
 def agrupar_defectos(filas_defectos: list[dict]) -> dict[str, list[dict]]:
@@ -131,12 +152,15 @@ def limpiar_registro(fila: dict, defectos: list[dict]) -> dict | None:
     insp = a_entero(fila.get(COL_INSP, ""))
     nok = a_entero(fila.get(COL_NOK, ""))
     fecha_prod = a_fecha(fila.get(COL_FECHA_PROD, ""))
+    hora = normalizar_hora(fila.get(COL_HORA, ""))
 
     return {
         "id": id_insp,
-        "fecha": fecha.isoformat(),          # 'YYYY-MM-DD', fácil de ordenar y filtrar
+        "fecha": fecha.isoformat(),          # fecha de captura, 'YYYY-MM-DD'
+        # Día con el que se agrupa y filtra en el tablero (cierra a las 6:00).
+        "dia_produccion": dia_produccion(fecha, hora).isoformat(),
         "turno": limpiar_texto(fila.get(COL_TURNO, "")),
-        "hora": normalizar_hora(fila.get(COL_HORA, "")),
+        "hora": hora,
         "parte": estandarizar_parte(fila.get(COL_PARTE, "")),
         "serial": limpiar_texto(fila.get(COL_SERIAL, "")),
         "fecha_produccion": fecha_prod.isoformat() if fecha_prod else None,

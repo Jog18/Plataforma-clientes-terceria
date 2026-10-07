@@ -3,6 +3,12 @@
 Cada versión se publica sola en Render al mezclarse a `main`. Las versiones
 con número tienen etiqueta en GitHub (pestaña *Tags*).
 
+## Sin versión todavía
+
+- El día del tablero cierra a las 6:00 en lugar de medianoche: el 3er turno
+  cuenta completo para el día en que empieza. Filtros, KPIs, tendencias, CSV y
+  reporte usan el día de producción; el CSV agrega la columna DIA PRODUCCION.
+
 ## v1.0.0 (2026-10-06): primera versión publicada
 
 - Fase 4: dashboard en línea en https://plataforma-qsb.onrender.com (Render,
