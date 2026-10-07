@@ -51,7 +51,7 @@ def test_columnas_en_el_orden_del_formato():
     assert 'filename="inspeccion_hbpo_2026-10-06_a_2026-10-08.xlsx"' in res.headers["content-disposition"]
     encabezado = [c.value for c in hoja_de(res)[1]]
     assert encabezado == [
-        "FECHA", "HORA", "TURNO", "NUMERO DE PARTE", "CANTIDAD INSPECCIONADA", "DIA PRODUCCIÓN", "SERIAL",
+        "FECHA", "HORA", "TURNO", "NUMERO DE PARTE", "CANTIDAD INSPECCIONADA", "FECHA DE PRODUCCION", "SERIAL",
         "DAÑO", "RAYONES", "CANTIDAD DE PIEZAS INSPECCIONADAS", "SCRAP", "%SCRAP", "TOTAL DE PIEZAS OK",
         "COMENTARIOS",
     ]

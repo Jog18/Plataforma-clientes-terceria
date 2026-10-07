@@ -109,7 +109,8 @@ como Lector con el correo de la cuenta de servicio.
 - Descarga en Excel (`/api/excel`, `servicios/excel.py`): formato del equipo con
   encabezados de colores, filtros, una columna por defecto y fila Total. Se eligen
   los registros por día del tablero; las columnas FECHA y HORA son de captura y
-  DIA PRODUCCIÓN es la fecha en que se produjo el lote (FECHA DE PRODUCCION).
+  FECHA DE PRODUCCION es la fecha en que se produjo el lote, tal como viene en la
+  hoja.
 
 ## Pruebas
 

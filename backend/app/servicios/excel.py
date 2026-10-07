@@ -2,13 +2,13 @@
 
 Columnas, en orden:
     FECHA, HORA, TURNO, NUMERO DE PARTE, CANTIDAD INSPECCIONADA,
-    DIA PRODUCCIÓN, SERIAL, <una columna por defecto del catálogo>,
+    FECHA DE PRODUCCION, SERIAL, <una columna por defecto del catálogo>,
     CANTIDAD DE PIEZAS INSPECCIONADAS, SCRAP, %SCRAP, TOTAL DE PIEZAS OK,
     COMENTARIOS
 y al final una fila "Total".
 
-FECHA y HORA son las reales de captura. DIA PRODUCCIÓN es la fecha en que se
-produjo el lote inspeccionado (columna FECHA DE PRODUCCION de la hoja).
+FECHA y HORA son las reales de captura. FECHA DE PRODUCCION es la fecha en que se
+produjo el lote inspeccionado (misma columna de la hoja).
 Los registros se eligen por el día del tablero (de 6:00 a 5:59).
 Reglas HBPO: scrap = NOK, OK = inspeccionadas - NOK.
 """
@@ -36,7 +36,7 @@ COLS_INICIO = [
     ("TURNO", AZUL, BLANCO, False, 8),
     ("NUMERO DE PARTE", AZUL, BLANCO, False, 18),
     ("CANTIDAD INSPECCIONADA", AZUL, BLANCO, False, 16),
-    ("DIA PRODUCCIÓN", AZUL, BLANCO, False, 13),
+    ("FECHA DE PRODUCCION", AZUL, BLANCO, False, 15),
     ("SERIAL", AZUL, BLANCO, False, 14),
 ]
 COLS_FINAL = [
