@@ -17,6 +17,7 @@ header.top .sub b{color:var(--ink);font-weight:600}
 .dlg .fechas input{padding:7px 9px;border:1px solid var(--line);border-radius:8px}
 .dlg .check{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--ink-2)}
 .dlg .aviso{color:var(--err);font-size:13px;margin:10px 0 0}
+.dlg .hint{color:var(--ink-3);font-size:12px;margin:10px 0 0}
 .dlg .botones{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .actions .quien{color:var(--ink-2);font-size:12.5px;margin-right:4px}

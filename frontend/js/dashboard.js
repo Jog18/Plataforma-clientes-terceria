@@ -71,12 +71,12 @@
   };
   var fechaLbl = function (f) { var p = f.split("-"); return p[2] + "/" + p[1] + "/" + p[0]; };
   var diaCorto = function (f) { var p = f.split("-"); return p[2] + "/" + p[1]; };
-  // Clave para ordenar por fecha y hora: "2026-10-02 08:21:42". Se rellena la
+  // Clave para ordenar por fecha y hora reales: "2026-10-02 08:21:42". Se rellena la
   // hora con ceros porque como texto "8:21:42" quedaría después de "13:03:42".
   var claveFechaHora = function (r) {
     var p = (r.hora || "").split(":").map(function (x) { return ("0" + x).slice(-2); });
     while (p.length < 3) p.push("00");
-    return r.fecha + " " + p.slice(0, 3).join(":");
+    return r.fechaReal + " " + p.slice(0, 3).join(":");
   };
   var ratio = function (a, b) { return b ? a / b : 0; };
   var suma = function (arr, k) { return arr.reduce(function (a, r) { return a + r[k]; }, 0); };
@@ -188,8 +188,11 @@
         var i = idx[x.defecto]; if (i !== undefined) d[i] += x.cantidad || 0;
       });
       var insp = r.insp || 0, nok = r.nok || 0;
+      // "fecha" es el día de producción (de 6:00 a 5:59): con él se agrupa y
+      // filtra todo el tablero. "fechaReal" es la fecha de captura de la hoja.
+      var dia = r.dia_produccion || r.fecha;
       return {
-        id: r.id, fecha: r.fecha, anio: r.fecha.slice(0, 4), mes: r.fecha.slice(0, 7),
+        id: r.id, fecha: dia, fechaReal: r.fecha, anio: dia.slice(0, 4), mes: dia.slice(0, 7),
         hora: r.hora || "", turno: r.turno || "", parte: r.parte || "", serial: r.serial || "",
         insp: insp, nok: nok, scrap: r.scrap, rw: r.retrabajo, ok: r.ok,
         comentarios: r.comentarios || "", defectos: r.defectos || [], d: d,
@@ -209,7 +212,8 @@
         "  |  Registros: ", h("b", null, fmt(ROWS.length)),
         h("span", { class: "solo-pantalla" }, "  |  Fuente: Google Sheets en vivo"),
         h("span", { class: "solo-impresion" }, "  |  Consultado: ", h("b", { id: "consultado" }, ahoraLbl()))]);
-      $("pieIzq").textContent = "Último registro " + fechaLbl(f1) + " · datos leídos " +
+      var ultimo = ROWS.reduce(function (a, r) { return claveFechaHora(r) > claveFechaHora(a) ? r : a; }, ROWS[0]);
+      $("pieIzq").textContent = "Último registro " + fechaLbl(ultimo.fechaReal) + " " + ultimo.hora + " · día de 6:00 a 5:59 · datos leídos " +
         (paquete.generado || "").replace("T", " ").slice(0, 16) +
         (paquete.descartados ? " · " + fmt(paquete.descartados) + " filas descartadas por falta de ID o fecha" : "");
     } else {
@@ -330,7 +334,7 @@
       ["Pzs defecto principal", fmt(top[1]), scrap ? pct(ratio(top[1], scrap), 1) + " del scrap" : "—", ""],
       ["N° de partes distintas", fmt(partes), "", ""],
       ["Filas a revisar", fmt(rev), "", rev ? "warn" : ""],
-      ["Último registro", ultimo ? fechaLbl(ultimo.fecha) : "—", ultimo ? (ultimo.hora + " · turno " + ultimo.turno) : "", "small"]
+      ["Último registro", ultimo ? fechaLbl(ultimo.fechaReal) : "—", ultimo ? (ultimo.hora + " · turno " + ultimo.turno) : "", "small"]
     ];
     poner($("kpis"), k.map(function (x) {
       var small = x[3].indexOf("small") !== -1;
@@ -533,7 +537,7 @@
 
     var rev = F.filter(function (r) { return r.val !== "OK"; }).slice(0, 200);
     var filas = rev.length ? rev.map(function (r) {
-      return h("tr", null, h("td", null, fechaLbl(r.fecha)), h("td", null, r.hora), h("td", null, r.turno), h("td", { class: "izq" }, r.parte),
+      return h("tr", null, h("td", null, fechaLbl(r.fechaReal)), h("td", null, r.hora), h("td", null, r.turno), h("td", { class: "izq" }, r.parte),
         h("td", null, fmt(r.insp)), h("td", null, fmt(r.nok)), h("td", null, pill(r.val)));
     }) : [h("tr", null, h("td", { colspan: 7, style: "text-align:center;color:var(--ink-3)" }, "Todas las filas de la selección están OK"))];
     poner($("tbVal"), tabla(["Fecha", "Hora", "Turno", "Parte", "Inspec.", "NOK", "Estado"], filas));
@@ -552,7 +556,7 @@
     var filas = rows.map(function (r) {
       var defs = r.defectos.map(function (d) { return d.defecto + (d.cantidad > 1 ? " ×" + d.cantidad : ""); }).join(", ");
       return h("tr", null,
-        h("td", null, fechaLbl(r.fecha)), h("td", null, r.hora), h("td", null, r.turno),
+        h("td", null, fechaLbl(r.fechaReal)), h("td", null, r.hora), h("td", null, r.turno),
         h("td", { class: "izq" }, r.parte), h("td", { class: "izq" }, r.serial),
         h("td", null, fmt(r.insp)), h("td", null, fmt(r.nok)), h("td", null, fmt(r.ok)), h("td", null, pct(ratio(r.nok, r.insp))),
         h("td", { class: "texto" }, defs), h("td", { class: "texto" }, r.comentarios), h("td", null, pill(r.val)));
@@ -580,10 +584,10 @@
     });
   }
   function descargarCsv(F, nombre) {
-    var head = ["ID", "FECHA", "HORA", "TURNO", "NUMERO DE PARTE", "SERIAL", "PIEZAS INSP", "PIEZAS NOK", "PIEZAS OK", "% SCRAP"].concat(DEF, ["COMENTARIOS", "VALIDACION"]);
+    var head = ["ID", "DIA PRODUCCION", "FECHA", "HORA", "TURNO", "NUMERO DE PARTE", "SERIAL", "PIEZAS INSP", "PIEZAS NOK", "PIEZAS OK", "% SCRAP"].concat(DEF, ["COMENTARIOS", "VALIDACION"]);
     var lines = [head.map(csvCelda).join(",")];
     F.forEach(function (r) {
-      lines.push([r.id, r.fecha, r.hora, r.turno, r.parte, r.serial, r.insp, r.nok, r.ok, ratio(r.nok, r.insp).toFixed(4)]
+      lines.push([r.id, r.fecha, r.fechaReal, r.hora, r.turno, r.parte, r.serial, r.insp, r.nok, r.ok, ratio(r.nok, r.insp).toFixed(4)]
         .concat(r.d, [r.comentarios, r.val]).map(csvCelda).join(","));
     });
     var blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
