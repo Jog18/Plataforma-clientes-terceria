@@ -620,7 +620,14 @@
     var f0 = ROWS[0].fecha, f1 = ROWS[0].fecha;
     ROWS.forEach(function (r) { if (r.fecha < f0) f0 = r.fecha; if (r.fecha > f1) f1 = r.fecha; });
     ["csvDesde", "csvHasta"].forEach(function (id) { $(id).min = f0; $(id).max = f1; });
-    if (!$("csvDesde").value) $("csvDesde").value = state.dia || f1;
+    // Si hay un día elegido en el tablero, el diálogo lo propone siempre (en
+    // modo "Un solo día"); si no, se queda la fecha anterior o el último día.
+    if (state.dia) {
+      $("csvDesde").value = state.dia;
+      document.querySelector('input[name="csvModo"][value="dia"]').checked = true;
+    } else if (!$("csvDesde").value) {
+      $("csvDesde").value = f1;
+    }
     if (!$("csvHasta").value) $("csvHasta").value = f1;
     ajustarModoCsv();
     $("dlgCsv").showModal();
