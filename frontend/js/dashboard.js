@@ -565,13 +565,9 @@
   }
   $("btnMore").addEventListener("click", function () { detLimit += 200; renderDet(filtrados()); });
 
-  // ---- CSV ------------------------------------------------------------------------------
+  // ---- Excel ------------------------------------------------------------------------------
 
-  function csvCelda(v) {
-    var t = String(v === undefined || v === null ? "" : v);
-    return /[",\n;]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
-  }
-  // El CSV se pide por un solo día o por un rango de días. Opcionalmente se
+  // El Excel se pide por un solo día o por un rango de días. Opcionalmente se
   // aplican también los filtros del tablero que no son de fecha.
   function filasCsv(desde, hasta, conFiltros) {
     var parteQ = state.parte.toUpperCase();
@@ -583,19 +579,31 @@
         (state.def === "" || r.d[+state.def] > 0);
     });
   }
-  function descargarCsv(F, nombre) {
-    var head = ["ID", "DIA PRODUCCION", "FECHA", "HORA", "TURNO", "NUMERO DE PARTE", "SERIAL", "PIEZAS INSP", "PIEZAS NOK", "PIEZAS OK", "% SCRAP"].concat(DEF, ["COMENTARIOS", "VALIDACION"]);
-    var lines = [head.map(csvCelda).join(",")];
-    F.forEach(function (r) {
-      lines.push([r.id, r.fecha, r.fechaReal, r.hora, r.turno, r.parte, r.serial, r.insp, r.nok, r.ok, ratio(r.nok, r.insp).toFixed(4)]
-        .concat(r.d, [r.comentarios, r.val]).map(csvCelda).join(","));
-    });
-    var blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
-    var a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = nombre;
-    a.click();
-    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  // El Excel lo arma el servidor (/api/excel) con el formato del equipo:
+  // encabezados de colores, una columna por defecto y fila Total.
+  function descargarExcel(desde, hasta, conFiltros) {
+    var q = { desde: desde, hasta: hasta };
+    if (conFiltros) {
+      if (state.turno) q.turno = state.turno;
+      if (state.parte) q.parte = state.parte;
+      if (state.def !== "") q.defecto = DEF[+state.def];
+    }
+    var url = "/api/excel?" + Object.keys(q).map(function (k) {
+      return encodeURIComponent(k) + "=" + encodeURIComponent(q[k]);
+    }).join("&");
+    $("csvDescargar").disabled = true;
+    return fetch(url, { credentials: "same-origin" }).then(function (res) {
+      if (res.status === 401) { window.location.replace("/login"); throw new Error("sesión"); }
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      var nombre = (/filename="([^"]+)"/.exec(res.headers.get("Content-Disposition") || "") || [])[1] || "inspeccion.xlsx";
+      return res.blob().then(function (blob) {
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = nombre;
+        a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+      });
+    }).finally(function () { $("csvDescargar").disabled = false; });
   }
   function modoCsv() { return document.querySelector('input[name="csvModo"]:checked').value; }
   function ajustarModoCsv() {
@@ -631,8 +639,15 @@
       $("csvAviso").textContent = aviso; $("csvAviso").hidden = false;
       return;
     }
-    var cliente = D && D.cliente ? D.cliente.toLowerCase() : "datos";
-    descargarCsv(F, "inspeccion_" + cliente + "_" + desde + (rango && hasta !== desde ? "_a_" + hasta : "") + ".csv");
+    // El diálogo se queda abierto hasta que llega el archivo.
+    e.preventDefault();
+    descargarExcel(desde, hasta, $("csvFiltros").checked).then(function () {
+      $("dlgCsv").close();
+    }).catch(function (err) {
+      if (err.message === "sesión") return;
+      $("csvAviso").textContent = "No se pudo generar el Excel. Intenta de nuevo.";
+      $("csvAviso").hidden = false;
+    });
   });
 
   // ---- botones de cabecera ----------------------------------------------------------------

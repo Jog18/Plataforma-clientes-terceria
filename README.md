@@ -105,7 +105,12 @@ como Lector con el correo de la cuenta de servicio.
   2do 14:00–21:00, 3ro 21:30–6:00. Lo capturado antes de las 6:00 cuenta para el
   día anterior, así el 3er turno queda completo en el día en que empieza. El
   tablero agrupa y filtra por este día (`dia_produccion`); las tablas muestran la
-  fecha y hora reales de captura y el CSV trae las dos.
+  fecha y hora reales de captura.
+- Descarga en Excel (`/api/excel`, `servicios/excel.py`): formato del equipo con
+  encabezados de colores, filtros, una columna por defecto y fila Total. Se eligen
+  los registros por día del tablero; las columnas FECHA y HORA son de captura y
+  FECHA DE PRODUCCION es la fecha en que se produjo el lote, tal como viene en la
+  hoja.
 
 ## Pruebas
 
