@@ -5,6 +5,7 @@ con número tienen etiqueta en GitHub (pestaña *Tags*).
 
 ## Sin versión todavía
 
+- Diálogo de Excel: si hay un día elegido en el tablero, lo propone en automático.
 - Diálogo de Excel: con "Un solo día" solo aparece el campo Día; con "Rango
   de días" aparecen Desde y Hasta.
 - La descarga ahora es un Excel (.xlsx) con el formato del equipo: encabezados
