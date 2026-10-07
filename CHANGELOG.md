@@ -5,6 +5,8 @@ con número tienen etiqueta en GitHub (pestaña *Tags*).
 
 ## Sin versión todavía
 
+- Diálogo de Excel: con "Un solo día" solo aparece el campo Día; con "Rango
+  de días" aparecen Desde y Hasta.
 - La descarga ahora es un Excel (.xlsx) con el formato del equipo: encabezados
   de colores, una columna por defecto, %SCRAP, piezas OK y fila Total. FECHA DE
   PRODUCCION es la fecha de producción del lote. Reemplaza al CSV.
