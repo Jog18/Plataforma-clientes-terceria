@@ -6,8 +6,8 @@ con número tienen etiqueta en GitHub (pestaña *Tags*).
 ## Sin versión todavía
 
 - La descarga ahora es un Excel (.xlsx) con el formato del equipo: encabezados
-  de colores, una columna por defecto, %SCRAP, piezas OK y fila Total. DIA
-  PRODUCCIÓN es la fecha de producción del lote. Reemplaza al CSV.
+  de colores, una columna por defecto, %SCRAP, piezas OK y fila Total. FECHA DE
+  PRODUCCION es la fecha de producción del lote. Reemplaza al CSV.
 - El día del tablero cierra a las 6:00 en lugar de medianoche: el 3er turno
   cuenta completo para el día en que empieza. Filtros, KPIs, tendencias, CSV y
   reporte usan el día de producción; el CSV agrega la columna DIA PRODUCCION.
