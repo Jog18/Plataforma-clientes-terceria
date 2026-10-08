@@ -77,6 +77,24 @@ def limpiar_texto(texto: str) -> str:
     return re.sub(r"\s+", " ", (texto or "")).strip()
 
 
+# La app de captura escribe "LAZER"; la palabra correcta es "LÁSER"
+# (Jesús, 2026-10-08). También se unifica "LASER" sin acento para que el
+# tablero no cuente el mismo defecto dos veces.
+PATRON_LASER = re.compile(r"\bl[aá][sz]er\b", re.IGNORECASE)
+
+
+def corregir_laser(texto: str) -> str:
+    """'LAZER NOK' -> 'LÁSER NOK', 'lazer chueco' -> 'láser chueco'."""
+    def reemplazo(m: re.Match) -> str:
+        palabra = m.group(0)
+        if palabra.isupper():
+            return "LÁSER"
+        if palabra[0].isupper():
+            return "Láser"
+        return "láser"
+    return PATRON_LASER.sub(reemplazo, texto or "")
+
+
 def leer_id(texto: str) -> str:
     """El ID lo genera la app como texto hexadecimal ('e21c0dc4', '26456617').
 
@@ -132,9 +150,9 @@ def agrupar_defectos(filas_defectos: list[dict]) -> dict[str, list[dict]]:
         if not id_insp:
             continue
         por_inspeccion.setdefault(id_insp, []).append({
-            "defecto": limpiar_texto(fila.get(COL_DEF_DEFECTO, "")).upper(),
+            "defecto": corregir_laser(limpiar_texto(fila.get(COL_DEF_DEFECTO, "")).upper()),
             "cantidad": a_entero(fila.get(COL_DEF_CANTIDAD, "")),
-            "texto": limpiar_texto(fila.get(COL_DEF_TEXTO, "")),
+            "texto": corregir_laser(limpiar_texto(fila.get(COL_DEF_TEXTO, ""))),
         })
     return por_inspeccion
 
@@ -170,7 +188,7 @@ def limpiar_registro(fila: dict, defectos: list[dict]) -> dict | None:
         "scrap": nok,
         "retrabajo": insp,
         "ok": max(insp - nok, 0),
-        "comentarios": limpiar_texto(fila.get(COL_COMENTARIOS, "")),
+        "comentarios": corregir_laser(limpiar_texto(fila.get(COL_COMENTARIOS, ""))),
         "defectos": defectos,
     }
 

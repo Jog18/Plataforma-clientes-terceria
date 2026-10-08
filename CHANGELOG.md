@@ -5,6 +5,9 @@ con número tienen etiqueta en GitHub (pestaña *Tags*).
 
 ## Sin versión todavía
 
+- "LAZER" (como lo escribe la app de captura) ahora se muestra como "LÁSER" en
+  defectos, filtros, gráficas, tablas, reporte y Excel. "LASER" sin acento
+  también se unifica, para que cuenten como un solo defecto.
 - Diálogo de Excel: si hay un día elegido en el tablero, lo propone en automático.
 - Diálogo de Excel: con "Un solo día" solo aparece el campo Día; con "Rango
   de días" aparecen Desde y Hasta.

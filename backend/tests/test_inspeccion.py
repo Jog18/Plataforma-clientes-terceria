@@ -4,7 +4,7 @@ import pytest
 
 from datetime import date
 
-from app.servicios.inspeccion import construir_paquete, dia_produccion, normalizar_hora
+from app.servicios.inspeccion import construir_paquete, corregir_laser, dia_produccion, normalizar_hora
 
 
 @pytest.mark.parametrize("crudo, esperado", [
@@ -60,3 +60,25 @@ def test_el_tercer_turno_queda_en_el_dia_en_que_empezo():
     assert por_id["b"]["fecha"] == "2026-10-06"          # la fecha real no se toca
     assert por_id["c"]["dia_produccion"] == "2026-10-06"
     assert por_id["d"]["dia_produccion"] == "2026-09-30"  # cambio de mes
+
+
+@pytest.mark.parametrize("crudo, esperado", [
+    ("LAZER NOK", "LÁSER NOK"),
+    ("LASER DESALINEADO", "LÁSER DESALINEADO"),
+    ("LÁSER NOK", "LÁSER NOK"),
+    ("Lazer chueco", "Láser chueco"),
+    ("sin lazer", "sin láser"),
+    ("LAZERADO", "LAZERADO"),   # solo palabras completas
+])
+def test_corregir_laser(crudo, esperado):
+    assert corregir_laser(crudo) == esperado
+
+
+def test_lazer_y_laser_se_cuentan_como_un_solo_defecto():
+    insp = [{"ID": "a1", "FECHA": "6/10/2026", "HORA": "8:00:00", "PIEZAS INSP.": "5", "PIEZAS NOK": "2",
+             "COMENTARIOS": "marca lazer movida"}]
+    defs = [{"ID INSPECCION": "a1", "DEFECTO": "Lazer nok", "CANTIDAD": "1"},
+            {"ID INSPECCION": "a1", "DEFECTO": "LASER NOK", "CANTIDAD": "1"}]
+    paquete = construir_paquete(insp, defs)
+    assert paquete["defectos"] == ["LÁSER NOK"]
+    assert paquete["filas"][0]["comentarios"] == "marca láser movida"
