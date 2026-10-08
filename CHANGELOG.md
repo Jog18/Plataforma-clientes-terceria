@@ -5,6 +5,7 @@ con número tienen etiqueta en GitHub (pestaña *Tags*).
 
 ## Sin versión todavía
 
+- Excel: el título de la gráfica de barras ya no tapa los números del eje.
 - Excel: nueva hoja "Resumen" después de la de datos, con KPIs, tabla OK/Scrap,
   tabla de defectos, gráfica de dona y gráfica de barras. Todo con fórmulas
   ligadas a la fila Total.

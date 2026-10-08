@@ -332,6 +332,7 @@ def _hoja_resumen(libro, datos, fila_total: int, col_def: int,
     barras.legend = None
     barras.title = "Scrap por tipo de defecto (piezas)"
     barras.title.tx.rich.p[0].pPr = ParagraphProperties(defRPr=CharacterProperties(sz=1300, b=True))
+    barras.title.overlay = False                     # título arriba, sin tapar el eje
     barras.x_axis.scaling.orientation = "maxMin"     # Daño arriba
     barras.y_axis.majorGridlines = None
     barras.y_axis.scaling.min = 0
