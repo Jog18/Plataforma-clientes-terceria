@@ -7,6 +7,10 @@ Columnas, en orden:
     COMENTARIOS
 y al final una fila "Total".
 
+Después va la hoja "Resumen" (Jesús, 2026-10-08): KPIs, tabla OK/Scrap,
+tabla de defectos y dos gráficas (dona y barras). Todo son fórmulas que
+apuntan a la fila Total de la hoja de datos, nada queda escrito a mano.
+
 FECHA y HORA son las reales de captura. FECHA DE PRODUCCION es la fecha en que se
 produjo el lote inspeccionado (misma columna de la hoja).
 Los registros se eligen por el día del tablero (de 6:00 a 5:59).
@@ -17,6 +21,14 @@ from datetime import date, time
 from io import BytesIO
 
 from openpyxl import Workbook
+from openpyxl.chart import BarChart, DoughnutChart, Reference
+from openpyxl.chart.label import DataLabelList
+from openpyxl.chart.series import DataPoint
+from openpyxl.chart.shapes import GraphicalProperties
+from openpyxl.chart.text import RichText, Text
+from openpyxl.chart.title import Title
+from openpyxl.chart.data_source import StrData, StrRef, StrVal
+from openpyxl.drawing.text import CharacterProperties, Paragraph, ParagraphProperties
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
@@ -172,6 +184,158 @@ def armar_libro(filas: list[dict], catalogo_defectos: list[str], titulo_hoja: st
     hoja.sheet_properties.pageSetUpPr.fitToPage = True
     hoja.print_title_rows = "1:1"
 
+    _hoja_resumen(libro, hoja, fila, col_def, catalogo_defectos, col_insp2, (tot_insp, tot_ok, tot_nok))
+
     salida = BytesIO()
     libro.save(salida)
     return salida.getvalue()
+
+
+# ---- hoja "Resumen" -------------------------------------------------------------
+
+AZUL_RESUMEN = "1F3864"
+GRIS_PERIODO = "595959"
+GRIS_TITULO = "808080"
+VERDE_KPI = "008000"
+VERDE_OK = "2E7D32"
+ROJO_SCRAP = "C62828"
+LINEA_RESUMEN = Side(style="thin", color="000000")
+
+# Anchos pedidos en puntos; Excel mide en caracteres (~7 px, 1 pt = 4/3 px).
+ANCHOS_PUNTOS = {"A": 15, "B": 150, "C": 70, "D": 15, "E": 95, "F": 60}
+
+
+def nombre_defecto_resumen(defecto: str) -> str:
+    """'DAÑO' -> 'Daño', 'LÁSER NOK' -> 'Defecto láser'."""
+    if "LÁSER" in defecto.upper():
+        return "Defecto láser"
+    return defecto.capitalize()
+
+
+def orden_defectos_resumen(catalogo: list[str]) -> list[str]:
+    """Daño, Rayones y láser primero (orden de Jesús); los demás después."""
+    def clave(d: str):
+        d = d.upper()
+        if d.startswith("DAÑO"):
+            return 0
+        if d.startswith("RAYON"):
+            return 1
+        if "LÁSER" in d:
+            return 2
+        return 3
+    return sorted(catalogo, key=clave)
+
+
+def _texto_grafica(tamano: int, color: str, negrita: bool = True) -> RichText:
+    props = CharacterProperties(sz=tamano * 100, b=negrita, solidFill=color)
+    return RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=props), endParaRPr=props)])
+
+
+def _encabezado_azul(hoja, rango: str, textos: tuple[str, str]) -> None:
+    for celda, texto in zip(hoja[rango][0], textos):
+        celda.value = texto
+        celda.fill = PatternFill("solid", fgColor=AZUL_RESUMEN)
+        celda.font = Font(bold=True, color=BLANCO)
+        celda.border = Border(bottom=LINEA_RESUMEN)
+
+
+def _hoja_resumen(libro, datos, fila_total: int, col_def: int,
+                  catalogo: list[str], col_insp2: int, totales: tuple[int, int, int]) -> None:
+    h = libro.create_sheet("Resumen")       # queda justo después de la de datos
+    ref = "'" + datos.title.replace("'", "''") + "'!"
+    letra = get_column_letter
+    ultima = max(fila_total - 1, 2)
+    fechas = f"{ref}A2:A{ultima}"
+
+    for col, puntos in ANCHOS_PUNTOS.items():
+        h.column_dimensions[col].width = round(puntos * 4 / 3 / 7, 2)
+
+    # 1. Encabezado.
+    h["B2"] = f"Resumen de Inspección {datos.title} – Total del periodo"
+    h["B2"].font = Font(name="Calibri", size=16, bold=True, color=AZUL_RESUMEN)
+    dia = lambda f: (f'TEXT(DAY({f}({fechas})),"00")&"/"&TEXT(MONTH({f}({fechas})),"00")'
+                     f'&"/"&YEAR({f}({fechas}))')
+    h["B3"] = f'="Periodo: "&{dia("MIN")}&" al "&{dia("MAX")}'
+    h["B3"].font = Font(italic=True, size=11, color=GRIS_PERIODO)
+
+    # 2. KPIs.
+    _encabezado_azul(h, "B5:C5", ("Indicador", "Valor"))
+    kpis = [
+        ("Piezas inspeccionadas", f"={ref}{letra(col_insp2)}{fila_total}"),
+        ("Piezas OK", f"={ref}{letra(col_insp2 + 3)}{fila_total}"),
+        ("Piezas scrap", f"={ref}{letra(col_insp2 + 1)}{fila_total}"),
+        ("% Scrap", "=IF(C6=0,0,C8/C6)"),
+    ]
+    for i, (nombre, formula) in enumerate(kpis, start=6):
+        h.cell(row=i, column=2, value=nombre)
+        c = h.cell(row=i, column=3, value=formula)
+        if i < 9:
+            c.font = Font(color=VERDE_KPI)
+            c.number_format = "#,##0"
+    h["C9"].number_format = "0.00%"
+    h["B9"].font = h["C9"].font = Font(bold=True)
+    for fila_kpi in h["B6:C9"]:
+        for c in fila_kpi:
+            c.border = Border(top=LINEA_RESUMEN, bottom=LINEA_RESUMEN)
+
+    # 3. Resultado (fuente de la dona).
+    _encabezado_azul(h, "E5:F5", ("Resultado", "Piezas"))
+    for i, (nombre, formula) in enumerate([("OK", "=C7"), ("Scrap", "=C8")], start=6):
+        h.cell(row=i, column=5, value=nombre)
+        h.cell(row=i, column=6, value=formula).number_format = "#,##0"
+
+    # 4. Defectos (fuente de las barras), uno por defecto del catálogo.
+    _encabezado_azul(h, "E10:F10", ("Tipo de defecto", "Piezas"))
+    orden = orden_defectos_resumen(catalogo)
+    for i, d in enumerate(orden, start=11):
+        col = col_def + catalogo.index(d)
+        h.cell(row=i, column=5, value=nombre_defecto_resumen(d))
+        h.cell(row=i, column=6, value=f"={ref}{letra(col)}{fila_total}").number_format = "#,##0"
+    fin_def = 10 + max(len(orden), 1)
+
+    # 5. Título dinámico de la dona.
+    h["E3"] = ('="OK: "&TEXT(C7,"#,##0")&" ("&TEXT(IF(C6=0,0,C7/C6),"0.0%")&") | Scrap: "'
+               '&TEXT(C8,"#,##0")&" ("&TEXT(C9,"0.00%")&")"')
+    h["E3"].font = Font(size=9, color=GRIS_TITULO)
+
+    # 6. Dona.
+    dona = DoughnutChart(holeSize=60)
+    dona.add_data(Reference(h, min_col=6, min_row=5, max_row=7), titles_from_data=True)
+    dona.set_categories(Reference(h, min_col=5, min_row=6, max_row=7))
+    serie = dona.series[0]
+    for idx, color in enumerate((VERDE_OK, ROJO_SCRAP)):
+        serie.dPt.append(DataPoint(idx=idx, spPr=GraphicalProperties(solidFill=color)))
+    serie.dLbls = DataLabelList(showCatName=True, showVal=True, showPercent=False,
+                                showSerName=False, showLeaderLines=False, showLegendKey=False,
+                                separator=": ", numFmt="#,##0",
+                                txPr=_texto_grafica(10, "000000"))
+    dona.legend.position = "b"
+    # El título se vincula a E3; el texto guardado es solo la vista previa
+    # hasta que Excel recalcula.
+    insp, ok, nok = totales
+    pct = lambda a, d: f"{(a / insp if insp else 0) * 100:.{d}f}%"
+    previo = f"OK: {ok:,} ({pct(ok, 1)}) | Scrap: {nok:,} ({pct(nok, 2)})"
+    cache = StrData(ptCount=1, pt=[StrVal(idx=0, v=previo)])
+    dona.title = Title(tx=Text(strRef=StrRef("'Resumen'!$E$3", strCache=cache)), overlay=False,
+                       txPr=_texto_grafica(13, AZUL_RESUMEN))
+    dona.width, dona.height = 16, 11.5
+    h.add_chart(dona, "H2")
+
+    # 7. Barras horizontales.
+    barras = BarChart(barDir="bar", gapWidth=60)
+    barras.add_data(Reference(h, min_col=6, min_row=10, max_row=fin_def), titles_from_data=True)
+    barras.set_categories(Reference(h, min_col=5, min_row=11, max_row=fin_def))
+    barras.series[0].graphicalProperties = GraphicalProperties(solidFill=ROJO_SCRAP)
+    barras.series[0].dLbls = DataLabelList(showVal=True, showCatName=False, showSerName=False,
+                                           showLegendKey=False, showPercent=False,
+                                           txPr=_texto_grafica(9, "000000"))
+    barras.legend = None
+    barras.title = "Scrap por tipo de defecto (piezas)"
+    barras.title.tx.rich.p[0].pPr = ParagraphProperties(defRPr=CharacterProperties(sz=1300, b=True))
+    barras.x_axis.scaling.orientation = "maxMin"     # Daño arriba
+    barras.y_axis.majorGridlines = None
+    barras.y_axis.scaling.min = 0
+    barras.x_axis.delete = False
+    barras.y_axis.delete = False
+    barras.width, barras.height = 15, 7.5
+    h.add_chart(barras, "B15")
