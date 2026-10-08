@@ -94,3 +94,24 @@ def test_rango_al_reves_es_error():
 def test_sin_registros_solo_encabezado_y_total():
     h = load_workbook(BytesIO(excel.armar_libro([], ["DAÑO"]))).active
     assert h.cell(row=2, column=1).value == "Total"
+
+
+def test_hoja_resumen_con_formulas():
+    libro = load_workbook(BytesIO(descargar("desde=2026-10-06&hasta=2026-10-08").content))
+    assert libro.sheetnames[1] == "Resumen"
+    datos = libro.sheetnames[0]
+    r = libro["Resumen"]
+    # Fila Total = 5; columnas: H DAÑO, I RAYONES, J inspeccionadas, K scrap, M OK.
+    assert r["C6"].value == f"='{datos}'!J5"
+    assert r["C7"].value == f"='{datos}'!M5"
+    assert r["C8"].value == f"='{datos}'!K5"
+    assert [r["E11"].value, r["F11"].value] == ["Daño", f"='{datos}'!H5"]
+    assert [r["E12"].value, r["F12"].value] == ["Rayones", f"='{datos}'!I5"]
+    assert "MIN('" in r["B3"].value and "A2:A4" in r["B3"].value
+    assert len(r._charts) == 2
+
+
+def test_resumen_nombres_y_orden_de_defectos():
+    cat = ["DAÑO", "LÁSER NOK", "RAYONES"]
+    assert excel.orden_defectos_resumen(cat) == ["DAÑO", "RAYONES", "LÁSER NOK"]
+    assert [excel.nombre_defecto_resumen(d) for d in cat] == ["Daño", "Defecto láser", "Rayones"]

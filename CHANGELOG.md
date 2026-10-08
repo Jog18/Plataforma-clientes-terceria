@@ -5,6 +5,9 @@ con número tienen etiqueta en GitHub (pestaña *Tags*).
 
 ## Sin versión todavía
 
+- Excel: nueva hoja "Resumen" después de la de datos, con KPIs, tabla OK/Scrap,
+  tabla de defectos, gráfica de dona y gráfica de barras. Todo con fórmulas
+  ligadas a la fila Total.
 - Diálogo de Excel: si el tablero está filtrado por mes o por año, propone ese
   rango completo en modo "Rango de días".
 - "LAZER" (como lo escribe la app de captura) ahora se muestra como "LÁSER" en
