@@ -620,11 +620,22 @@
     var f0 = ROWS[0].fecha, f1 = ROWS[0].fecha;
     ROWS.forEach(function (r) { if (r.fecha < f0) f0 = r.fecha; if (r.fecha > f1) f1 = r.fecha; });
     ["csvDesde", "csvHasta"].forEach(function (id) { $(id).min = f0; $(id).max = f1; });
-    // Si hay un día elegido en el tablero, el diálogo lo propone siempre (en
-    // modo "Un solo día"); si no, se queda la fecha anterior o el último día.
+    // El diálogo propone las fechas del filtro del tablero: un día elegido va
+    // en modo "Un solo día"; un mes o un año, como rango completo (recortado
+    // a los días que hay datos). Sin filtro de fecha se queda lo anterior.
+    var ini = "", fin = "";
+    if (state.mes) {
+      var ultimo = new Date(+state.mes.slice(0, 4), +state.mes.slice(5, 7), 0).getDate();
+      ini = state.mes + "-01"; fin = state.mes + "-" + ultimo;
+    }
+    else if (state.anio) { ini = state.anio + "-01-01"; fin = state.anio + "-12-31"; }
     if (state.dia) {
       $("csvDesde").value = state.dia;
       document.querySelector('input[name="csvModo"][value="dia"]').checked = true;
+    } else if (ini) {
+      $("csvDesde").value = ini < f0 ? f0 : ini;
+      $("csvHasta").value = fin > f1 ? f1 : fin;
+      document.querySelector('input[name="csvModo"][value="rango"]').checked = true;
     } else if (!$("csvDesde").value) {
       $("csvDesde").value = f1;
     }

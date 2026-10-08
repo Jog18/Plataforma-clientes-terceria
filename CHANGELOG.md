@@ -5,6 +5,8 @@ con número tienen etiqueta en GitHub (pestaña *Tags*).
 
 ## Sin versión todavía
 
+- Diálogo de Excel: si el tablero está filtrado por mes o por año, propone ese
+  rango completo en modo "Rango de días".
 - "LAZER" (como lo escribe la app de captura) ahora se muestra como "LÁSER" en
   defectos, filtros, gráficas, tablas, reporte y Excel. "LASER" sin acento
   también se unifica, para que cuenten como un solo defecto.
